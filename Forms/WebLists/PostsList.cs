@@ -5,17 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using WebForum.Forms.WebLists;
 using Button = System.Windows.Forms.Button;
 
-namespace WebForum.Forms.ProfilLists
+namespace WebForum.Forms.WebLists
 {
-    internal class BookMarksList
+    internal class PostsList
     {
         static Form form = new Form();
         static int page = 1;
         static Panel panel = new Panel();
-        public Form BookmarksListIni(Form formF)
+        public Form PostsListIni(Form formF)
         {
             form = formF;
             form.Size = new System.Drawing.Size(440, 285);
@@ -115,11 +114,6 @@ namespace WebForum.Forms.ProfilLists
                 button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
                 button.Text = "Go to Post";
                 innerPanel.Controls.Add(button);
-
-                Button buttonDel = new Button();
-                buttonDel.Location = new System.Drawing.Point(panel.Size.Width - 160, 0);
-                buttonDel.Text = "Delate Bookmark";
-                innerPanel.Controls.Add(buttonDel);
                 //добавить действие
 
                 Label label = new Label();

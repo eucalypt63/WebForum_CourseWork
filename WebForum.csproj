@@ -52,20 +52,22 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\Bans\ForumTagBan.cs" />
-    <Compile Include="Forms\Bans\TopicTagBan.cs" />
+    <Compile Include="Forms\Bans_-\ForumTagBan.cs" />
+    <Compile Include="Forms\Bans_-\TopicTagBan.cs" />
     <Compile Include="Forms\LogInForms\Authorization.cs" />
     <Compile Include="Forms\LogInForms\Registration.cs" />
     <Compile Include="Forms\Profile\EditProfile.cs" />
     <Compile Include="Forms\Profile\Profile.cs" />
     <Compile Include="Forms\ProfilLists\BookMarksList.cs" />
     <Compile Include="Forms\ProfilLists\CommentsList.cs" />
-    <Compile Include="Forms\ProfilLists\PostsList.cs" />
+    <Compile Include="Forms\ProfilLists\YourPostsList.cs" />
+    <Compile Include="Forms\ProfilLists\SubProfile.cs" />
     <Compile Include="Forms\ProfilLists\SubscriprionsList.cs" />
     <Compile Include="Forms\SettingTopic\AddPost.cs" />
-    <Compile Include="Forms\SettingTopic\DelatePost.cs" />
+    <Compile Include="Forms\WebLists\CommentsOfPost.cs" />
     <Compile Include="Forms\WebLists\ForumsList.cs" />
     <Compile Include="Forms\WebLists\PostInf.cs" />
+    <Compile Include="Forms\WebLists\PostsList.cs" />
     <Compile Include="Forms\WebLists\TopicsLists.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

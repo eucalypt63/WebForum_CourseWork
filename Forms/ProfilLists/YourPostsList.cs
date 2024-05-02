@@ -10,12 +10,12 @@ using Button = System.Windows.Forms.Button;
 
 namespace WebForum.Forms.ProfilLists
 {
-    internal class BookMarksList
+    internal class YourPostsList
     {
         static Form form = new Form();
         static int page = 1;
         static Panel panel = new Panel();
-        public Form BookmarksListIni(Form formF)
+        public Form PostListIni(Form formF)
         {
             form = formF;
             form.Size = new System.Drawing.Size(440, 285);
@@ -118,7 +118,7 @@ namespace WebForum.Forms.ProfilLists
 
                 Button buttonDel = new Button();
                 buttonDel.Location = new System.Drawing.Point(panel.Size.Width - 160, 0);
-                buttonDel.Text = "Delate Bookmark";
+                buttonDel.Text = "Delate Post";
                 innerPanel.Controls.Add(buttonDel);
                 //добавить действие
 

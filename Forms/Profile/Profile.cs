@@ -59,8 +59,7 @@ namespace WebForum.Forms
             Button buttonForumSettings = new Button();
             Button buttonBookmarkSettings = new Button();
             Button buttonCommentsSettings = new Button();
-            Button buttonAddTopic = new Button();
-            Button buttonDelateTopic = new Button();
+            Button buttonAddPost = new Button();
             Button buttonPosts = new Button();
             Button buttonExit = new Button();
 
@@ -136,8 +135,7 @@ namespace WebForum.Forms
             panelButt.Controls.Add(buttonForumSettings);
             panelButt.Controls.Add(buttonBookmarkSettings);
             panelButt.Controls.Add(buttonCommentsSettings);
-            panelButt.Controls.Add(buttonAddTopic);
-            panelButt.Controls.Add(buttonDelateTopic);
+            panelButt.Controls.Add(buttonAddPost);
             panelButt.Controls.Add(buttonPosts);
             panelButt.Controls.Add(buttonExit);
             //Добавить шапку сайта
@@ -173,24 +171,20 @@ namespace WebForum.Forms
             buttonCommentsSettings.Click += buttonCommentsList_Click;
             
             //
-            buttonAddTopic.Text = "Add Post";
-            buttonAddTopic.Location = new System.Drawing.Point(buttonBookmarkSettings.Location.X, buttonBookmarkSettings.Location.Y + 30);
-            buttonAddTopic.Size = buttonProfileSettings.Size;
-            buttonAddTopic.Click += buttonAddPost_Click;
-            
-            buttonDelateTopic.Text = "Delate Post";
-            buttonDelateTopic.Location = new System.Drawing.Point(buttonCommentsSettings.Location.X, buttonCommentsSettings.Location.Y + 30);
-            buttonDelateTopic.Size = buttonProfileSettings.Size;
-            buttonDelateTopic.Click += buttonDelatePost_Click;
+            buttonAddPost.Text = "Add Post";
+            buttonAddPost.Location = new System.Drawing.Point(buttonBookmarkSettings.Location.X, buttonBookmarkSettings.Location.Y + 30);
+            buttonAddPost.Size = buttonProfileSettings.Size;
+            buttonAddPost.Click += buttonAddPost_Click;
 
-            //
             buttonPosts.Text = "Your Posts";
-            buttonPosts.Location = new System.Drawing.Point(buttonAddTopic.Location.X, buttonAddTopic.Location.Y + 30);
+            buttonPosts.Location = new System.Drawing.Point(buttonCommentsSettings.Location.X, buttonCommentsSettings.Location.Y + 30);
             buttonPosts.Size = buttonProfileSettings.Size;
             buttonPosts.Click += buttonPosts_Click;
 
+            //
+
             buttonExit.Text = "Exit Account";
-            buttonExit.Location = new System.Drawing.Point(buttonDelateTopic.Location.X, buttonDelateTopic.Location.Y + 30);
+            buttonExit.Location = new System.Drawing.Point(buttonAddPost.Location.X, buttonAddPost.Location.Y + 30);
             buttonExit.Size = buttonProfileSettings.Size;
             buttonExit.Click += buttonExit_Click;
 
@@ -244,7 +238,7 @@ namespace WebForum.Forms
 
         private static void buttonPosts_Click(object sender, EventArgs e)
         {
-            PostsList Posts = new PostsList();
+            YourPostsList Posts = new YourPostsList();
             form.Controls.Clear();
             Posts.PostListIni(form);
         }
@@ -254,13 +248,6 @@ namespace WebForum.Forms
             AddPost addPost = new AddPost();
             form.Controls.Clear();
             addPost.AddPostIni(form);
-        }
-
-        private static void buttonDelatePost_Click(object sender, EventArgs e)
-        {
-            DelatePost delatePost = new DelatePost();
-            form.Controls.Clear();
-            delatePost.DelatePostIni(form);
         }
 
         private static void buttonCommentsList_Click(object sender, EventArgs e)

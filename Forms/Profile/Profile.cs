@@ -9,6 +9,7 @@ using WebForum.Forms.Bans;
 using WebForum.Forms.ProfilLists;
 using WebForum.Forms.SettingTopic;
 using WebForum.Forms.WebLists;
+using MySql.Data.MySqlClient;
 
 namespace WebForum.Forms
 {
@@ -16,8 +17,12 @@ namespace WebForum.Forms
     {
         static TextBox textBoxPassword;
         static Form form = new Form();
-        public Form ProfileFormIni(Form formF)
+        static MySqlConnection connection;
+        static int Id;
+        public Form ProfileFormIni(Form formF, MySqlConnection connectionF, int id)
         {
+            Id = id;
+            connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(440, 285);
             //
@@ -219,28 +224,28 @@ namespace WebForum.Forms
         {
             Authorization authorization = new Authorization();
             form.Controls.Clear();
-            authorization.AuthorizationFormIni(form);
+            authorization.AuthorizationFormIni(form, connection);
         }
 
         private static void buttonEditProfile_Click(object sender, EventArgs e)
         {
             EditProfile EditPorf = new EditProfile();
             form.Controls.Clear();
-            EditPorf.EditProfileFormIni(form);
+            EditPorf.EditProfileFormIni(form, connection, Id);
         }
 
         private static void buttonProfile_Click(object sender, EventArgs e)
         {
             Profile Profile = new Profile();
             form.Controls.Clear();
-            Profile.ProfileFormIni(form);
+            Profile.ProfileFormIni(form, connection, Id);
         }
 
         private static void buttonPosts_Click(object sender, EventArgs e)
         {
             YourPostsList Posts = new YourPostsList();
             form.Controls.Clear();
-            Posts.PostListIni(form);
+            Posts.PostListIni(form, connection, Id);
         }
 
         private static void buttonAddPost_Click(object sender, EventArgs e)
@@ -254,14 +259,14 @@ namespace WebForum.Forms
         {
             CommentsList comments = new CommentsList();
             form.Controls.Clear();
-            comments.ComentsListIni(form);
+            comments.ComentsListIni(form, connection, Id);
         }
 
         private static void buttonBookmarksList_Click(object sender, EventArgs e)
         {
             BookMarksList bookmarks = new BookMarksList();
             form.Controls.Clear();
-            bookmarks.BookmarksListIni(form);
+            bookmarks.BookmarksListIni(form, connection, Id);
         }
 
         private static void buttonForumTagsBunList_Click(object sender, EventArgs e)
@@ -282,14 +287,14 @@ namespace WebForum.Forms
         {
             SubscriprionsList subscriprions = new SubscriprionsList();
             form.Controls.Clear();
-            subscriprions.SubscriprionsListIni(form);
+            subscriprions.SubscriprionsListIni(form, connection, Id);
         }
 
         private static void buttonForumList_Click(object sender, EventArgs e)
         {
             ForumsList forums = new ForumsList();
             form.Controls.Clear();
-            forums.ForumsListIni(form);
+            forums.ForumsListIni(form, connection, Id);
         }
         //buttonCreate.Click += buttonCreate_Click;
     }

@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using WebForum.Forms.WebLists;
 using Button = System.Windows.Forms.Button;
+using MySql.Data.MySqlClient;
 
 namespace WebForum.Forms.ProfilLists
 {
@@ -15,8 +16,12 @@ namespace WebForum.Forms.ProfilLists
         static Form form = new Form();
         static int page = 1;
         static Panel panel = new Panel();
-        public Form ComentsListIni(Form formF)
+        static MySqlConnection connection;
+        static int Id;
+        public Form ComentsListIni(Form formF, MySqlConnection connectionF, int id)
         {
+            Id = id;
+            connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(440, 285);
             //
@@ -91,14 +96,14 @@ namespace WebForum.Forms.ProfilLists
         {
             ForumsList forums = new ForumsList();
             form.Controls.Clear();
-            forums.ForumsListIni(form);
+            forums.ForumsListIni(form, connection, Id);
         }
 
         private static void buttonProfile_Click(object sender, EventArgs e)
         {
             Profile Profile = new Profile();
             form.Controls.Clear();
-            Profile.ProfileFormIni(form);
+            Profile.ProfileFormIni(form, connection, Id);
         }
         private static void drawPanel()
         {

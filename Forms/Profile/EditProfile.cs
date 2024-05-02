@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,10 +11,14 @@ namespace WebForum.Forms
 
     internal class EditProfile
     {
+        static MySqlConnection connection;
         static TextBox textBoxPassword;
         static Form form = new Form();
-        public Form EditProfileFormIni(Form formF)
+        static int Id;
+        public Form EditProfileFormIni(Form formF, MySqlConnection connectionF, int id)
         {
+            Id = id;
+            connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(280, 240);
 
@@ -138,13 +143,13 @@ namespace WebForum.Forms
             //Сохранить изменения в бд
             Profile profile = new Profile();
             form.Controls.Clear();
-            profile.ProfileFormIni(form);
+            profile.ProfileFormIni(form, connection, Id);
         }
         private static void buttonCancel_Click(object sender, EventArgs e)
         {
             Profile profile = new Profile();
             form.Controls.Clear();
-            profile.ProfileFormIni(form);
+            profile.ProfileFormIni(form, connection, Id);
         }
     }
 }

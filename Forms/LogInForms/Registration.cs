@@ -1,5 +1,7 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,13 +12,15 @@ namespace WebForum.Forms
 {
     internal class Registration
     {
+        static TextBox textBoxLogin = new TextBox();
         static TextBox textBoxPassword;
         static Form form = new Form();
-        public Form RegistrationFormIni(Form formF)
+        static MySqlConnection connection;
+        public Form RegistrationFormIni(Form formF, MySqlConnection connectionF)
         {
+            connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(250, 300);
-            TextBox textBoxLogin = new TextBox();
 
             textBoxPassword = new TextBox();
             textBoxPassword.PasswordChar = '*';
@@ -99,14 +103,30 @@ namespace WebForum.Forms
         {
             Authorization authorization = new Authorization();
             form.Controls.Clear();
-            authorization.AuthorizationFormIni(form);
+            authorization.AuthorizationFormIni(form, connection);
         }
 
         private static void buttonCreate_Click(object sender, EventArgs e)
         {
-            Profile profile = new Profile();
-            form.Controls.Clear();
-            profile.ProfileFormIni(form);
+            if (textBoxLogin.Text != "" && textBoxPassword.Text != "")
+            {
+                string query = "INSERT INTO Profile (P_Login, P_Password, P_id)\r\nSELECT @login, @password, (SELECT MAX(P_id) + 1 FROM (SELECT * FROM Profile) AS temp);";
+                MySqlCommand command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("@login", textBoxLogin.Text);
+                command.Parameters.AddWithValue("@password", textBoxPassword.Text);
+                command.ExecuteNonQuery();
+
+                string queryId = "SELECT MAX(P_id) FROM Profile";
+                command = new MySqlCommand(queryId, connection);
+                object result = command.ExecuteScalar();
+                int Id = Convert.ToInt32(result);
+                
+                //
+
+                Profile profile = new Profile();
+                form.Controls.Clear();
+                profile.ProfileFormIni(form, connection, Id);
+            }
         }
     }
 }

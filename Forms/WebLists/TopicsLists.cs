@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,8 +15,11 @@ namespace WebForum.Forms.WebLists
         static Form form = new Form();
         static int page = 1;
         static Panel panel = new Panel();
-        public Form TopicsListIni(Form formF)
+        static MySqlConnection connection;
+        static int Id;
+        public Form TopicsListIni(Form formF, MySqlConnection connectionF, int id)
         {
+            connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(440, 285);
             //
@@ -90,14 +94,14 @@ namespace WebForum.Forms.WebLists
         {
             ForumsList forums = new ForumsList();
             form.Controls.Clear();
-            forums.ForumsListIni(form);
+            forums.ForumsListIni(form, connection, Id);
         }
 
         private static void buttonProfile_Click(object sender, EventArgs e)
         {
             Profile Profile = new Profile();
             form.Controls.Clear();
-            Profile.ProfileFormIni(form);
+            Profile.ProfileFormIni(form, connection, Id);
         }
         private static void drawPanel()
         {

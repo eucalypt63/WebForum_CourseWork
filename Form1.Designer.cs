@@ -34,9 +34,10 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(978, 544);
+            this.ClientSize = new System.Drawing.Size(1185, 544);
             this.Name = "WindowForm";
             this.Text = "WebForum";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WindowForm_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
 

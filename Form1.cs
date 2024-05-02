@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -13,7 +14,9 @@ namespace WebForum
 {
     public partial class WindowForm : Form
     {
-        Authorization authorization = new Authorization();
+        static string connectionString = "server=localhost;user=root;database=WebForum";
+        static MySqlConnection connection = new MySqlConnection(connectionString);
+       
         public WindowForm()
         {
             InitializeComponent();
@@ -21,7 +24,14 @@ namespace WebForum
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            authorization.AuthorizationFormIni(this);
+            connection.Open();
+            Authorization authorization = new Authorization();
+            authorization.AuthorizationFormIni(this, connection);
+        }
+
+        private void WindowForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            connection.Close();
         }
     }
 }

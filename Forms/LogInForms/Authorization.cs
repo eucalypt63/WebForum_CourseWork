@@ -1,5 +1,7 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Reflection.Emit;
@@ -16,13 +18,16 @@ namespace WebForum.forms
 {
     internal class Authorization
     {
+        static TextBox textBoxLogin = new TextBox();
         static TextBox textBoxPassword;
         static Form form = new Form();
-        public Form AuthorizationFormIni(Form formF)
+        static MySqlConnection connection;
+        public void AuthorizationFormIni(Form formF, MySqlConnection connectionF)
         {
+            connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(250, 300);
-            TextBox textBoxLogin = new TextBox();
+            
 
             textBoxPassword = new TextBox();
             textBoxPassword.PasswordChar = '*';
@@ -85,8 +90,6 @@ namespace WebForum.forms
 
             form.Controls.Add(buttonEnter);
             form.Controls.Add(buttonRegistration);
-
-            return form;
         }
 
         private static void CheckBox_CheckedChanged(object sender, EventArgs e)
@@ -105,14 +108,31 @@ namespace WebForum.forms
         {
             Registration registration = new Registration();
             form.Controls.Clear();
-            registration.RegistrationFormIni(form);
+            registration.RegistrationFormIni(form, connection);
         }
 
         private static void buttonEnter_Click(object sender, EventArgs e)
         {
-            Profile profile = new Profile();
-            form.Controls.Clear();
-            profile.ProfileFormIni(form);
+            string login = textBoxLogin.Text;
+            string password = textBoxPassword.Text;
+            string query = "SELECT P_id FROM Profile WHERE P_Login = @Login AND P_Password = @Password";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@login", login);
+            command.Parameters.AddWithValue("@password", password);
+
+            object result = command.ExecuteScalar();
+            if (result != null)
+            {
+                int userId = Convert.ToInt32(result);
+                Profile profile = new Profile();
+                form.Controls.Clear();
+                profile.ProfileFormIni(form, connection, userId);
+            }
+            else
+            {
+
+            }
         }
     }
 }

@@ -112,7 +112,7 @@ namespace WebForum.Forms
         {
             if (textBoxLogin.Text != "" && textBoxPassword.Text != "")
             {
-                string query = "INSERT INTO Profile (P_Login, P_Password, P_Data_of_Registration, P_id)\r\nSELECT @login, @password, CURDATE(), (SELECT MAX(P_id) + 1 FROM (SELECT * FROM Profile) AS temp);";
+                string query = "INSERT INTO Profile (P_Login, P_Password, P_Data_of_Registration, P_id) SELECT @login, @password, CURDATE(), (SELECT MAX(P_id) + 1 FROM (SELECT * FROM Profile) AS temp);";
                 MySqlCommand command = new MySqlCommand(query, connection);
                 command.Parameters.AddWithValue("@login", textBoxLogin.Text);
                 command.Parameters.AddWithValue("@password", textBoxPassword.Text);

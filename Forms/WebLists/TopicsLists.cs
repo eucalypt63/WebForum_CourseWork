@@ -36,6 +36,7 @@ namespace WebForum.Forms.WebLists
             Button buttonProfile = new Button();
             Button buttonForum = new Button();
             Button buttonBack = new Button();
+            Button buttonUsersList = new Button();
 
             buttonProfile.Text = "Profile";
             buttonProfile.Location = new System.Drawing.Point(5, 0);
@@ -48,6 +49,12 @@ namespace WebForum.Forms.WebLists
             buttonForum.Size = buttonProfile.Size;
             buttonForum.Click += buttonForumList_Click;
             panelHeader.Controls.Add(buttonForum);
+
+            buttonUsersList.Text = "Users List";
+            buttonUsersList.Location = new System.Drawing.Point(buttonForum.Location.X + buttonForum.Size.Width + 5, buttonForum.Location.Y);
+            buttonUsersList.Size = buttonProfile.Size;
+            buttonUsersList.Click += buttonUserList_Click;
+            panelHeader.Controls.Add(buttonUsersList);
 
             buttonBack.Text = "Back";
             buttonBack.Location = new System.Drawing.Point(panelHeader.Size.Width - 77, 0);
@@ -87,9 +94,17 @@ namespace WebForum.Forms.WebLists
 
         private static void buttonNextPage_Click(object sender, EventArgs e)
         {
-            //Добавить ограничения бд
-            page++;
-            drawPanel();
+            string query = "Select count(*) from Topic";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            object result = command.ExecuteScalar();
+            int Num = Convert.ToInt32(result);
+            double i = Num / 7;
+            if (i + 1 > page)
+            {
+                page++;
+                drawPanel();
+            }
         }
         private static void buttonPrevPage_Click(object sender, EventArgs e)
         {
@@ -131,7 +146,7 @@ namespace WebForum.Forms.WebLists
             MySqlDataReader reader = command.ExecuteReader();
             command.Dispose();
 
-            int i = 0;
+            int i = 0;//Добавить ограничение на 7 топиков, тоже самое с поставми и форумами
             while (reader.Read())
             {
                 string name = reader.GetString("Top_Name");
@@ -159,6 +174,13 @@ namespace WebForum.Forms.WebLists
           
             reader.Close();
      
+        }
+
+        private static void buttonUserList_Click(object sender, EventArgs e)
+        {
+            UsersList UserList = new UsersList();
+            form.Controls.Clear();
+            UserList.UsersListIni(form, connection, Id);
         }
     }
 }

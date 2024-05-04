@@ -8,6 +8,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using WebForum.Forms.WebLists;
 using Button = System.Windows.Forms.Button;
 using MySql.Data.MySqlClient;
+using System.Xml.Linq;
+using System.Runtime.Remoting.Messaging;
 
 namespace WebForum.Forms.ProfilLists
 {
@@ -17,10 +19,12 @@ namespace WebForum.Forms.ProfilLists
         static int page = 1;
         static Panel panel = new Panel();
         static MySqlConnection connection;
+        static int UserId;
         static int Id;
-        public void SubscriprionsListIni(Form formF, MySqlConnection connectionF, int id)
+        public void SubscriprionsListIni(Form formF, MySqlConnection connectionF, int id, int idSubProf)
         {
             Id = id;
+            UserId = idSubProf;
             connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(440, 285);
@@ -32,6 +36,7 @@ namespace WebForum.Forms.ProfilLists
 
             Button buttonProfile = new Button();
             Button buttonForum = new Button();
+            Button buttonUsersList = new Button();
 
             buttonProfile.Text = "Profile";
             buttonProfile.Location = new System.Drawing.Point(5, 0);
@@ -44,6 +49,12 @@ namespace WebForum.Forms.ProfilLists
             buttonForum.Size = buttonProfile.Size;
             buttonForum.Click += buttonForumList_Click;
             panelHeader.Controls.Add(buttonForum);
+
+            buttonUsersList.Text = "Users List";
+            buttonUsersList.Location = new System.Drawing.Point(buttonForum.Location.X + buttonForum.Size.Width + 5, buttonForum.Location.Y);
+            buttonUsersList.Size = buttonProfile.Size;
+            buttonUsersList.Click += buttonUserList_Click;
+            panelHeader.Controls.Add(buttonUsersList);
 
             //
 
@@ -104,32 +115,85 @@ namespace WebForum.Forms.ProfilLists
             form.Controls.Clear();
             Profile.ProfileFormIni(form, connection, Id);
         }
+
         private static void drawPanel()
         {
             panel.Controls.Clear();
-            for (int i = 0; i < 7 * page; i++)//содержит по 7 полей, прокручивать кнопками
+
+            string querySkip = $"SELECT Sub_Subsciption_profile FROM Subscriptions where Sub_Profile = {UserId};";
+            MySqlCommand commandSkip = new MySqlCommand(querySkip, connection);
+            MySqlDataReader readerSkip = commandSkip.ExecuteReader();
+            int skip = 0;
+
+            while (skip < (page - 1) * 7)
             {
+                if (readerSkip.Read())
+                    _ = readerSkip.GetString("Sub_Subsciption_profile");
+                skip++;
+            }
+
+            commandSkip.Dispose();
+            List<int> numbers = new List<int>();
+            while (readerSkip.Read())
+            {
+                numbers.Add(readerSkip.GetInt32("Sub_Subsciption_profile"));
+            }
+            readerSkip.Close();
+
+            int i = 0;
+            foreach (int userId in numbers)
+            {
+                string query = $"SELECT P_Login FROM Profile where P_id = {userId};";
+                MySqlCommand command = new MySqlCommand(query, connection);
+                MySqlDataReader reader = command.ExecuteReader();
+                string name = "";
+                if (reader.Read())
+                    name = reader.GetString("P_Login");
+                command.Dispose();
+                reader.Close();
+
                 Panel innerPanel = new Panel();
                 innerPanel.BorderStyle = BorderStyle.Fixed3D;
                 innerPanel.Location = new System.Drawing.Point(0, 26 * i);
                 innerPanel.Size = new System.Drawing.Size(panel.Size.Width, 26);
                 panel.Controls.Add(innerPanel);
 
+                Label label = new Label();
+                label.Text = $"User: {name}";
+                label.Size = new System.Drawing.Size(120, label.Size.Height);
+                innerPanel.Controls.Add(label);
+
                 Button button = new Button();
                 button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
-                button.Text = "Go to Sub";
+                button.Text = $"Watch";
+                button.Name = $"{name}";
+                button.Click += buttonUser_Click;
                 innerPanel.Controls.Add(button);
-
-                Button buttonDel = new Button();
-                buttonDel.Location = new System.Drawing.Point(panel.Size.Width - 160, 0);
-                buttonDel.Text = "Delate Sub";
-                innerPanel.Controls.Add(buttonDel);
-                //добавить действие
-
-                Label label = new Label();
-                label.Text = "Sub Name " + (i + 1 + (7 * (page - 1)));
-                innerPanel.Controls.Add(label);
+                
+                i++;
             }
+            readerSkip.Close();
+        }
+
+        private static void buttonUser_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            string query = $"Select P_id from Profile where P_Login = \'{button.Name}\';";
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.ExecuteNonQuery();
+            object result = command.ExecuteScalar();
+            int UserId = Convert.ToInt32(result);
+
+            UserProfile User = new UserProfile();
+            form.Controls.Clear();
+            User.UserProfileIni(form, connection, Id, UserId);
+        }
+
+        private static void buttonUserList_Click(object sender, EventArgs e)
+        {
+            UsersList UserList = new UsersList();
+            form.Controls.Clear();
+            UserList.UsersListIni(form, connection, Id);
         }
     }
 }

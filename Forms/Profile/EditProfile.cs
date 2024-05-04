@@ -90,7 +90,7 @@ namespace WebForum.Forms
             comboBoxCountry.Location = new System.Drawing.Point(labelCountry.Location.X, labelCountry.Location.Y + 15);
             comboBoxCountry.Size = new System.Drawing.Size(110, labelCountry.Size.Height);
             comboBoxCountry.SelectedIndexChanged += new EventHandler(comboBoxCountry_SelectedIndexChanged);
-
+            comboBoxCountry.Items.Clear();
             string query = "SELECT C_Country_Name FROM Country";
             MySqlCommand command = new MySqlCommand(query, connection);
             MySqlDataReader reader = command.ExecuteReader();
@@ -120,6 +120,7 @@ namespace WebForum.Forms
             comboBoxGender.Location = new System.Drawing.Point(labelGender.Location.X, labelGender.Location.Y + 15);
             comboBoxGender.Size = new System.Drawing.Size(110, labelGender.Size.Height);
 
+            comboBoxGender.Items.Clear();
             query = "SELECT Gen_Name FROM Gender";
             command = new MySqlCommand(query, connection);
             reader = command.ExecuteReader();

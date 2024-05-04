@@ -5,12 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using Button = System.Windows.Forms.Button;
 
 namespace WebForum.Forms.WebLists
 {
-    internal class PostsList
+    internal class UsersList
     {
         static Form form = new Form();
         static int page = 1;
@@ -18,7 +16,7 @@ namespace WebForum.Forms.WebLists
         static MySqlConnection connection;
         static int Id;
 
-        public void PostsListIni(Form formF, MySqlConnection connectionF, int id)
+        public void UsersListIni(Form formF, MySqlConnection connectionF, int id)
         {
             Id = id;
             connection = connectionF;
@@ -49,7 +47,7 @@ namespace WebForum.Forms.WebLists
             buttonUsersList.Text = "Users List";
             buttonUsersList.Location = new System.Drawing.Point(buttonForum.Location.X + buttonForum.Size.Width + 5, buttonForum.Location.Y);
             buttonUsersList.Size = buttonProfile.Size;
-            buttonUsersList.Click += buttonForumList_Click;
+            buttonUsersList.Click += buttonUserList_Click;
             panelHeader.Controls.Add(buttonUsersList);
 
             //
@@ -84,13 +82,20 @@ namespace WebForum.Forms.WebLists
 
         private static void buttonNextPage_Click(object sender, EventArgs e)
         {
-            //Добавить ограничения бд
-            page++;
-            drawPanel();
+            string query = "Select count(*) from Forum";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            object result = command.ExecuteScalar();
+            int Num = Convert.ToInt32(result);
+            double i = Num / 7;
+            if (i + 1 > page)
+            {
+                page++;
+                drawPanel();
+            }
         }
         private static void buttonPrevPage_Click(object sender, EventArgs e)
         {
-            //Добавить ограничения бд
             if (page - 1 > 0)
             {
                 page--;
@@ -102,7 +107,7 @@ namespace WebForum.Forms.WebLists
         {
             ForumsList forums = new ForumsList();
             form.Controls.Clear();
-            forums.ForumsListIni(form,connection, Id);
+            forums.ForumsListIni(form, connection, Id);
         }
 
         private static void buttonProfile_Click(object sender, EventArgs e)
@@ -111,27 +116,68 @@ namespace WebForum.Forms.WebLists
             form.Controls.Clear();
             Profile.ProfileFormIni(form, connection, Id);
         }
+
         private static void drawPanel()
         {
             panel.Controls.Clear();
-            for (int i = 0; i < 7 * page; i++)//содержит по 7 полей, прокручивать кнопками
+
+            int i = 0;
+            string queryCount = $"Select count(*) from Profile  where P_id != {Id}";
+            MySqlCommand commandCount = new MySqlCommand(queryCount, connection);
+            object result = commandCount.ExecuteScalar();
+            commandCount.Dispose();
+
+            int count = Convert.ToInt32(result);
+            int countUs = 0;
+            while (countUs < 7 && countUs < count - (7 * (page - 1)))
             {
-                Panel innerPanel = new Panel();
-                innerPanel.BorderStyle = BorderStyle.Fixed3D;
-                innerPanel.Location = new System.Drawing.Point(0, 26 * i);
-                innerPanel.Size = new System.Drawing.Size(panel.Size.Width, 26);
-                panel.Controls.Add(innerPanel);
+                string query = $"SELECT P_Login FROM Profile where P_id = {i + (7 * (page-1))} AND P_id != {Id};";
+                MySqlCommand command = new MySqlCommand(query, connection);
+                MySqlDataReader reader = command.ExecuteReader();
+                string name = "";
+                if (reader.Read())
+                    name = reader.GetString("P_Login");
 
-                Button button = new Button();
-                button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
-                button.Text = "Go to Post";
-                innerPanel.Controls.Add(button);
-                //добавить действие
+                if (name != "")
+                {
+                    Panel innerPanel = new Panel();
+                    innerPanel.BorderStyle = BorderStyle.Fixed3D;
+                    innerPanel.Location = new System.Drawing.Point(0, 26 * countUs);
+                    innerPanel.Size = new System.Drawing.Size(panel.Size.Width, 26);
+                    panel.Controls.Add(innerPanel);
 
-                Label label = new Label();
-                label.Text = "Post Name " + (i + 1 + (7 * (page - 1)));
-                innerPanel.Controls.Add(label);
+                    Label label = new Label();
+                    label.Text = $"User: {name}";
+                    label.Size = new System.Drawing.Size(120, label.Size.Height);
+                    innerPanel.Controls.Add(label);
+
+                    Button button = new Button();
+                    button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
+                    button.Text = $"Watch";
+                    button.Name = $"{name}";
+                    button.Click += buttonUser_Click;
+                    innerPanel.Controls.Add(button);
+                    countUs++;
+                }
+                command.Dispose();
+                reader.Close();
+                i++;
             }
+
+        }
+
+        private static void buttonUser_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            string query = $"Select P_id from Profile where P_Login = \'{button.Name}\';";
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.ExecuteNonQuery();
+            object result = command.ExecuteScalar();
+            int UserId = Convert.ToInt32(result);
+
+            UserProfile User = new UserProfile();
+            form.Controls.Clear();
+            User.UserProfileIni(form, connection, Id, UserId);
         }
 
         private static void buttonUserList_Click(object sender, EventArgs e)

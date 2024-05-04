@@ -1,27 +1,27 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using WebForum.forms;
 using WebForum.Forms.ProfilLists;
-using WebForum.Forms.SettingTopic;
-using WebForum.Forms.WebLists;
-using MySql.Data.MySqlClient;
-using System.IO.Ports;
 
-namespace WebForum.Forms
+namespace WebForum.Forms.WebLists
 {
-    internal class Profile
+    internal class UserProfile
     {
-        static TextBox textBoxPassword;
+        static Button buttonSubscribe;
+
         static Form form = new Form();
         static MySqlConnection connection;
+        static int UserId;
         static int Id;
-        public void ProfileFormIni(Form formF, MySqlConnection connectionF, int id)
+
+        public void UserProfileIni(Form formF, MySqlConnection connectionF,int id, int Userid)
         {
             Id = id;
+            UserId = Userid;
             connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(440, 285);
@@ -57,16 +57,11 @@ namespace WebForum.Forms
             Panel panelButt = new Panel();
             Panel panelProfile = new Panel();
             Label labelLoginName = new Label();
-            Label lableDataReg = new Label();//для бд
-            Button buttonProfileSettings = new Button();
+            Label lableDataReg = new Label();
             Button buttonSubscriptions = new Button();
-            Button buttonTopicSettings = new Button();
-            Button buttonForumSettings = new Button();
             Button buttonBookmarkSettings = new Button();
-            Button buttonCommentsSettings = new Button();
-            Button buttonAddPost = new Button();
             Button buttonPosts = new Button();
-            Button buttonExit = new Button();
+            buttonSubscribe = new Button();
 
             //Инцилизация остальных элементов
             Label lableHeaderInf = new Label();
@@ -75,14 +70,14 @@ namespace WebForum.Forms
             Label labelPatronymic = new Label();
 
             Label labelCountry = new Label();
-            Label labelCity = new Label();//для бд
-            Label labelGender = new Label();//для бд
-            Label labelAge = new Label();// для бд
+            Label labelCity = new Label();
+            Label labelGender = new Label();
+            Label labelAge = new Label();
             string P_Age = "";
             int P_Country = -1;
             int P_City = -1;
             int P_Gender = -1;
-            string query = $"SELECT P_Name, P_Country, P_City, P_Login, P_Surname, P_Patronymic, P_Data_of_Registration, P_Gender, P_Age FROM Profile WHERE P_id = {Id}";
+            string query = $"SELECT P_Name, P_Country, P_City, P_Login, P_Surname, P_Patronymic, P_Data_of_Registration, P_Gender, P_Age FROM Profile WHERE P_id = {UserId}";
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
                 using (MySqlDataReader reader = command.ExecuteReader())
@@ -225,55 +220,54 @@ namespace WebForum.Forms
             panelButt.Location = new System.Drawing.Point(5, 30);
             panelButt.Size = new System.Drawing.Size(200, 210);
             panelButt.Controls.Add(panelProfile);
-            panelButt.Controls.Add(buttonProfileSettings);
             panelButt.Controls.Add(buttonSubscriptions);
-            panelButt.Controls.Add(buttonTopicSettings);
-            panelButt.Controls.Add(buttonForumSettings);
             panelButt.Controls.Add(buttonBookmarkSettings);
-            panelButt.Controls.Add(buttonCommentsSettings);
-            panelButt.Controls.Add(buttonAddPost);
             panelButt.Controls.Add(buttonPosts);
-            panelButt.Controls.Add(buttonExit);
-            //Добавить шапку сайта
-            //
-            buttonProfileSettings.Text = "Edit profile";
-            buttonProfileSettings.Location = new System.Drawing.Point(5, 45);
-            buttonProfileSettings.Size = new System.Drawing.Size(90, 25);
-            buttonProfileSettings.Click += buttonEditProfile_Click;
             
-            buttonSubscriptions.Text = "Subscription";
-            buttonSubscriptions.Location = new System.Drawing.Point(buttonProfileSettings.Location.X + 95, buttonProfileSettings.Location.Y);
-            buttonSubscriptions.Size = buttonProfileSettings.Size;
+
+            buttonSubscriptions.Text = "Subscription"; 
+            buttonSubscriptions.Location = new System.Drawing.Point(5, 45);
+            buttonSubscriptions.Size = new System.Drawing.Size(90, 25);
             buttonSubscriptions.Click += buttonSubscriptionsList_Click;
-            //
-            buttonBookmarkSettings.Text = "Bookmarks";
-            buttonBookmarkSettings.Location = new System.Drawing.Point(buttonProfileSettings.Location.X, buttonProfileSettings.Location.Y + 30);
-            buttonBookmarkSettings.Size = buttonProfileSettings.Size;
-            buttonBookmarkSettings.Click += buttonBookmarksList_Click;
-
-            buttonCommentsSettings.Text = "Your Comments";
-            buttonCommentsSettings.Location = new System.Drawing.Point(buttonSubscriptions.Location.X, buttonSubscriptions.Location.Y + 30);
-            buttonCommentsSettings.Size = buttonProfileSettings.Size;
-            buttonCommentsSettings.Click += buttonCommentsList_Click;
             
-            //
-            buttonAddPost.Text = "Add Post";
-            buttonAddPost.Location = new System.Drawing.Point(buttonBookmarkSettings.Location.X, buttonBookmarkSettings.Location.Y + 30);
-            buttonAddPost.Size = buttonProfileSettings.Size;
-            buttonAddPost.Click += buttonAddPost_Click;
+            buttonBookmarkSettings.Text = "Bookmarks";
+            buttonBookmarkSettings.Location = new System.Drawing.Point(buttonSubscriptions.Location.X + 95, buttonSubscriptions.Location.Y);
+            buttonBookmarkSettings.Size = buttonSubscriptions.Size;
+            //buttonBookmarkSettings.Click += buttonBookmarksList_Click;
 
-            buttonPosts.Text = "Your Posts";
-            buttonPosts.Location = new System.Drawing.Point(buttonCommentsSettings.Location.X, buttonCommentsSettings.Location.Y + 30);
-            buttonPosts.Size = buttonProfileSettings.Size;
+            //
+
+            buttonPosts.Text = "Posts";
+            buttonPosts.Location = new System.Drawing.Point(buttonSubscriptions.Location.X, buttonSubscriptions.Location.Y + 30);
+            buttonPosts.Size = buttonSubscriptions.Size;
             buttonPosts.Click += buttonPosts_Click;
 
-            //
+            if (Id != UserId)
+            {
+                string querySub = "SELECT COUNT(*) FROM Subscriptions WHERE Sub_Profile = @id AND Sub_Subsciption_profile = @userId";
 
-            buttonExit.Text = "Exit Account";
-            buttonExit.Location = new System.Drawing.Point(buttonAddPost.Location.X, buttonAddPost.Location.Y + 30);
-            buttonExit.Size = buttonProfileSettings.Size;
-            buttonExit.Click += buttonExit_Click;
+                using (MySqlCommand command = new MySqlCommand(querySub, connection))
+                {
+                    command.Parameters.AddWithValue("@id", Id);
+                    command.Parameters.AddWithValue("@userId", UserId);
 
+                    int count = Convert.ToInt32(command.ExecuteScalar());
+
+                    if (count > 0)
+                    {
+                        buttonSubscribe.Text = "Unsubscribe";
+                    }
+                    else
+                    {
+                        buttonSubscribe.Text = "Subscribe";
+                    }
+                }
+                buttonSubscribe.Location = new System.Drawing.Point(buttonBookmarkSettings.Location.X, buttonBookmarkSettings.Location.Y + 30);
+                buttonSubscribe.Size = buttonSubscriptions.Size;
+
+                buttonSubscribe.Click += buttonSubscribe_Click;
+                panelButt.Controls.Add(buttonSubscribe);
+            }
             //
             panelProfile.BorderStyle = BorderStyle.FixedSingle;
             panelProfile.Location = new System.Drawing.Point(0, 0);
@@ -287,60 +281,11 @@ namespace WebForum.Forms
             form.Controls.Add(panelProfileInf);
         }
 
-        private static void buttonExit_Click(object sender, EventArgs e)
+        private static void buttonUserList_Click(object sender, EventArgs e)
         {
-            Authorization authorization = new Authorization();
+            UsersList UserList = new UsersList();
             form.Controls.Clear();
-            authorization.AuthorizationFormIni(form, connection);
-        }
-
-        private static void buttonEditProfile_Click(object sender, EventArgs e)
-        {
-            EditProfile EditPorf = new EditProfile();
-            form.Controls.Clear();
-            EditPorf.EditProfileFormIni(form, connection, Id);
-        }
-
-        private static void buttonProfile_Click(object sender, EventArgs e)
-        {
-            Profile Profile = new Profile();
-            form.Controls.Clear();
-            Profile.ProfileFormIni(form, connection, Id);
-        }
-
-        private static void buttonPosts_Click(object sender, EventArgs e)
-        {
-            YourPostsList Posts = new YourPostsList();
-            form.Controls.Clear();
-            Posts.PostListIni(form, connection, Id, Id);
-        }
-
-        private static void buttonAddPost_Click(object sender, EventArgs e)
-        {
-            AddPost addPost = new AddPost();
-            form.Controls.Clear();
-            addPost.AddPostIni(form, connection, Id);
-        }
-
-        private static void buttonCommentsList_Click(object sender, EventArgs e)
-        {
-            CommentsList comments = new CommentsList();
-            form.Controls.Clear();
-            comments.ComentsListIni(form, connection, Id);
-        }
-
-        private static void buttonBookmarksList_Click(object sender, EventArgs e)
-        {
-            BookMarksList bookmarks = new BookMarksList();
-            form.Controls.Clear();
-            bookmarks.BookmarksListIni(form, connection, Id);
-        }
-
-        private static void buttonSubscriptionsList_Click(object sender, EventArgs e)
-        {
-            SubscriprionsList subscriprions = new SubscriprionsList();
-            form.Controls.Clear();
-            subscriprions.SubscriprionsListIni(form, connection, Id, Id);
+            UserList.UsersListIni(form, connection, Id);
         }
 
         private static void buttonForumList_Click(object sender, EventArgs e)
@@ -350,12 +295,63 @@ namespace WebForum.Forms
             forums.ForumsListIni(form, connection, Id);
         }
 
-        private static void buttonUserList_Click(object sender, EventArgs e)
+        private static void buttonProfile_Click(object sender, EventArgs e)
         {
-            UsersList UserList = new UsersList();
+            Profile Profile = new Profile();
             form.Controls.Clear();
-            UserList.UsersListIni(form, connection, Id);
+            Profile.ProfileFormIni(form, connection, Id);
         }
-        //buttonCreate.Click += buttonCreate_Click;
+
+        private static void buttonSubscribe_Click(object sender, EventArgs e)
+        {
+            string query = "SELECT COUNT(*) FROM Subscriptions WHERE Sub_Profile = @id AND Sub_Subsciption_profile = @userId";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@id", Id);
+                command.Parameters.AddWithValue("@userId", UserId);
+
+                int count = Convert.ToInt32(command.ExecuteScalar());
+
+                if (count > 0)
+                {
+                    // Удалить элемент из таблицы
+                    string deleteQuery = "DELETE FROM Subscriptions WHERE Sub_Profile = @id AND Sub_Subsciption_profile = @userId";
+                    using (MySqlCommand deleteCommand = new MySqlCommand(deleteQuery, connection))
+                    {
+                        deleteCommand.Parameters.AddWithValue("@id", Id);
+                        deleteCommand.Parameters.AddWithValue("@userId", UserId);
+                        deleteCommand.ExecuteNonQuery();
+                    }
+                    buttonSubscribe.Text = "Subscribe";
+                }
+                else
+                {
+                    // Добавить элемент в таблицу
+                    string insertQuery = "INSERT INTO Subscriptions (Sub_Profile, Sub_Subsciption_profile) VALUES (@id, @userId)";
+                    using (MySqlCommand insertCommand = new MySqlCommand(insertQuery, connection))
+                    {
+                        insertCommand.Parameters.AddWithValue("@id", Id);
+                        insertCommand.Parameters.AddWithValue("@userId", UserId);
+                        insertCommand.ExecuteNonQuery();
+                    }
+                    buttonSubscribe.Text = "Unsubscribe";
+                }
+            }
+        }
+
+        private static void buttonSubscriptionsList_Click(object sender, EventArgs e)
+        {
+            SubscriprionsList subscriprions = new SubscriprionsList();
+            form.Controls.Clear();
+            subscriprions.SubscriprionsListIni(form, connection, Id, UserId);
+        }
+
+        private static void buttonPosts_Click(object sender, EventArgs e)
+        {
+            YourPostsList Posts = new YourPostsList();
+            form.Controls.Clear();
+            Posts.PostListIni(form, connection, Id, UserId);
+        }
     }
 }

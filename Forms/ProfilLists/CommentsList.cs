@@ -32,6 +32,7 @@ namespace WebForum.Forms.ProfilLists
 
             Button buttonProfile = new Button();
             Button buttonForum = new Button();
+            Button buttonUsersList = new Button();
 
             buttonProfile.Text = "Profile";
             buttonProfile.Location = new System.Drawing.Point(5, 0);
@@ -44,6 +45,12 @@ namespace WebForum.Forms.ProfilLists
             buttonForum.Size = buttonProfile.Size;
             buttonForum.Click += buttonForumList_Click;
             panelHeader.Controls.Add(buttonForum);
+
+            buttonUsersList.Text = "Users List";
+            buttonUsersList.Location = new System.Drawing.Point(buttonForum.Location.X + buttonForum.Size.Width + 5, buttonForum.Location.Y);
+            buttonUsersList.Size = buttonProfile.Size;
+            //buttonUsersList.Click += buttonForumList_Click;
+            panelHeader.Controls.Add(buttonUsersList);
 
             //
 

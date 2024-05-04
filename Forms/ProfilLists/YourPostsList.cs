@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using WebForum.Forms.WebLists;
 using Button = System.Windows.Forms.Button;
-using MySql.Data.MySqlClient;
 
 namespace WebForum.Forms.ProfilLists
 {
@@ -17,10 +12,12 @@ namespace WebForum.Forms.ProfilLists
         static int page = 1;
         static Panel panel = new Panel();
         static MySqlConnection connection;
+        static int UserId;
         static int Id;
-        public void PostListIni(Form formF, MySqlConnection connectionF, int id)
+        public void PostListIni(Form formF, MySqlConnection connectionF, int id, int userId) 
         {
             Id = id;
+            UserId = userId;
             connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(440, 285);
@@ -32,6 +29,7 @@ namespace WebForum.Forms.ProfilLists
 
             Button buttonProfile = new Button();
             Button buttonForum = new Button();
+            Button buttonUsersList = new Button();
 
             buttonProfile.Text = "Profile";
             buttonProfile.Location = new System.Drawing.Point(5, 0);
@@ -45,6 +43,11 @@ namespace WebForum.Forms.ProfilLists
             buttonForum.Click += buttonForumList_Click;
             panelHeader.Controls.Add(buttonForum);
 
+            buttonUsersList.Text = "Users List";
+            buttonUsersList.Location = new System.Drawing.Point(buttonForum.Location.X + buttonForum.Size.Width + 5, buttonForum.Location.Y);
+            buttonUsersList.Size = buttonProfile.Size;
+            buttonUsersList.Click += buttonUserList_Click;
+            panelHeader.Controls.Add(buttonUsersList);
             //
 
             Button PrevPage = new Button();
@@ -77,9 +80,18 @@ namespace WebForum.Forms.ProfilLists
 
         private static void buttonNextPage_Click(object sender, EventArgs e)
         {
-            //Добавить ограничения бд
-            page++;
-            drawPanel();
+
+            string query = "Select count(*) from Post";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            object result = command.ExecuteScalar();
+            int Num = Convert.ToInt32(result);
+            double i = Num / 7;
+            if (i + 1 > page)
+            {
+                page++;
+                drawPanel();
+            }
         }
         private static void buttonPrevPage_Click(object sender, EventArgs e)
         {
@@ -104,32 +116,59 @@ namespace WebForum.Forms.ProfilLists
             form.Controls.Clear();
             Profile.ProfileFormIni(form, connection, Id);
         }
+
         private static void drawPanel()
         {
             panel.Controls.Clear();
-            for (int i = 0; i < 7 * page; i++)//содержит по 7 полей, прокручивать кнопками
+
+            int i = 0;
+            string queryCount = $"Select count(*) from Post  where Post_Profile = {UserId}";
+            MySqlCommand commandCount = new MySqlCommand(queryCount, connection);
+            object result = commandCount.ExecuteScalar();
+            commandCount.Dispose();
+
+            int count = Convert.ToInt32(result);
+            int countUs = 0;
+            while (countUs < 7 && countUs < count - (7 * (page - 1)) && i < count - (7 * (page - 1)))
             {
-                Panel innerPanel = new Panel();
-                innerPanel.BorderStyle = BorderStyle.Fixed3D;
-                innerPanel.Location = new System.Drawing.Point(0, 26 * i);
-                innerPanel.Size = new System.Drawing.Size(panel.Size.Width, 26);
-                panel.Controls.Add(innerPanel);
+                string query = $"SELECT Post_Title FROM Post where Post_id = {i + (7 * (page - 1))} AND Post_Profile = {UserId};";
+                MySqlCommand command = new MySqlCommand(query, connection);
+                MySqlDataReader reader = command.ExecuteReader();
+                string name = "";
+                if (reader.Read())
+                    name = reader.GetString("Post_Title");
 
-                Button button = new Button();
-                button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
-                button.Text = "Go to Post";
-                innerPanel.Controls.Add(button);
+                if (name != "")
+                {
+                    Panel innerPanel = new Panel();
+                    innerPanel.BorderStyle = BorderStyle.Fixed3D;
+                    innerPanel.Location = new System.Drawing.Point(0, 26 * countUs);
+                    innerPanel.Size = new System.Drawing.Size(panel.Size.Width, 26);
+                    panel.Controls.Add(innerPanel);
 
-                Button buttonDel = new Button();
-                buttonDel.Location = new System.Drawing.Point(panel.Size.Width - 160, 0);
-                buttonDel.Text = "Delate Post";
-                innerPanel.Controls.Add(buttonDel);
-                //добавить действие
+                    Label label = new Label();
+                    label.Text = $"Post: {name}";
+                    label.Size = new System.Drawing.Size(120, label.Size.Height);
+                    innerPanel.Controls.Add(label);
 
-                Label label = new Label();
-                label.Text = "Post Name " + (i + 1 + (7 * (page - 1)));
-                innerPanel.Controls.Add(label);
+                    Button button = new Button();
+                    button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
+                    button.Text = $"Watch";
+                    button.Name = $"{name}";
+                    //button.Click += buttonUser_Click;
+                    innerPanel.Controls.Add(button);
+                    countUs++;
+                }
+                command.Dispose();
+                reader.Close();
+                i++;
             }
+        }
+        private static void buttonUserList_Click(object sender, EventArgs e)
+        {
+            UsersList UserList = new UsersList();
+            form.Controls.Clear();
+            UserList.UsersListIni(form, connection, Id);
         }
     }
 }

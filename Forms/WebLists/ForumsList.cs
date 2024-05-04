@@ -31,6 +31,7 @@ namespace WebForum.Forms.WebLists
 
             Button buttonProfile = new Button();
             Button buttonForum = new Button();
+            Button buttonUsersList = new Button();
 
             buttonProfile.Text = "Profile";
             buttonProfile.Location = new System.Drawing.Point(5, 0);
@@ -43,6 +44,12 @@ namespace WebForum.Forms.WebLists
             buttonForum.Size = buttonProfile.Size;
             buttonForum.Click += buttonForumList_Click;
             panelHeader.Controls.Add(buttonForum);
+
+            buttonUsersList.Text = "Users List";
+            buttonUsersList.Location = new System.Drawing.Point(buttonForum.Location.X + buttonForum.Size.Width + 5, buttonForum.Location.Y);
+            buttonUsersList.Size = buttonProfile.Size;
+            buttonUsersList.Click += buttonUserList_Click;
+            panelHeader.Controls.Add(buttonUsersList);
 
             //
 
@@ -80,7 +87,7 @@ namespace WebForum.Forms.WebLists
 
             MySqlCommand command = new MySqlCommand(query, connection);
             object result = command.ExecuteScalar();
-            int Num = Convert.ToInt32(result) + 5;
+            int Num = Convert.ToInt32(result);
             double i = Num / 7;
             if (i + 1 > page)
             {
@@ -168,6 +175,13 @@ namespace WebForum.Forms.WebLists
             TopicsLists Topics = new TopicsLists();
             form.Controls.Clear();
             Topics.TopicsListIni(form, connection, Id, IdForum);
+        }
+
+        private static void buttonUserList_Click(object sender, EventArgs e)
+        {
+            UsersList UserList = new UsersList();
+            form.Controls.Clear();
+            UserList.UsersListIni(form, connection, Id);
         }
     }
 }

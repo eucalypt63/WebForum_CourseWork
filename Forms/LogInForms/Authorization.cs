@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WebForum.Forms;
+using WebForum.Forms.WebLists;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 using CheckBox = System.Windows.Forms.CheckBox;
 using Label = System.Windows.Forms.Label;
@@ -125,13 +126,13 @@ namespace WebForum.forms
             if (result != null)
             {
                 int userId = Convert.ToInt32(result);
-                Profile profile = new Profile();
+                ForumsList ForumList = new ForumsList();
                 form.Controls.Clear();
-                profile.ProfileFormIni(form, connection, userId);
+                ForumList.ForumsListIni(form, connection, userId);
             }
             else
             {
-
+                //Неверный логин и/или пароль
             }
         }
     }

@@ -18,7 +18,7 @@ namespace WebForum.Forms.ProfilLists
         static Panel panel = new Panel();
         static MySqlConnection connection;
         static int Id;
-        public Form ComentsListIni(Form formF, MySqlConnection connectionF, int id)
+        public void ComentsListIni(Form formF, MySqlConnection connectionF, int id)
         {
             Id = id;
             connection = connectionF;
@@ -73,7 +73,6 @@ namespace WebForum.Forms.ProfilLists
             form.Controls.Add(panelHeader);
             form.Controls.Add(NextPage);
             form.Controls.Add(PrevPage);
-            return form;
         }
 
         private static void buttonNextPage_Click(object sender, EventArgs e)

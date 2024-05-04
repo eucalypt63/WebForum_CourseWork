@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WebForum.forms;
-using WebForum.Forms.Bans;
 using WebForum.Forms.ProfilLists;
 using WebForum.Forms.SettingTopic;
 using WebForum.Forms.WebLists;
 using MySql.Data.MySqlClient;
+using System.IO.Ports;
 
 namespace WebForum.Forms
 {
@@ -19,7 +19,7 @@ namespace WebForum.Forms
         static Form form = new Form();
         static MySqlConnection connection;
         static int Id;
-        public Form ProfileFormIni(Form formF, MySqlConnection connectionF, int id)
+        public void ProfileFormIni(Form formF, MySqlConnection connectionF, int id)
         {
             Id = id;
             connection = connectionF;
@@ -46,13 +46,6 @@ namespace WebForum.Forms
             buttonForum.Click += buttonForumList_Click;
             panelHeader.Controls.Add(buttonForum);
 
-            //
-
-            Panel panelProfileInf = new Panel();
-            panelProfileInf.BorderStyle = BorderStyle.Fixed3D;
-            panelProfileInf.Location = new System.Drawing.Point(210, 70);
-            panelProfileInf.Size = new System.Drawing.Size(200, 170);
-
             //Инцилизация элементов панели
             Panel panelButt = new Panel();
             Panel panelProfile = new Panel();
@@ -78,47 +71,138 @@ namespace WebForum.Forms
             Label labelCity = new Label();//для бд
             Label labelGender = new Label();//для бд
             Label labelAge = new Label();// для бд
+            string P_Age = "";
+            int P_Country = -1;
+            int P_City = -1;
+            int P_Gender = -1;
+            string query = $"SELECT P_Name, P_Country, P_City, P_Login, P_Surname, P_Patronymic, P_Data_of_Registration, P_Gender, P_Age FROM Profile WHERE P_id = {Id}";
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        string P_Name = reader.GetString("P_Name");
+                        string P_Surname = reader.GetString("P_Surname");
+                        string P_Patronymic = reader.GetString("P_Patronymic");
+                        string P_Data_of_Registration = reader.GetString("P_Data_of_Registration");
+                        P_Age = reader.GetString("P_Age");
+                        string P_Login = reader.GetString("P_Login");
+
+                        P_Country = reader.GetInt32("P_Country");
+                        P_City = reader.GetInt32("P_City");
+                        P_Gender = reader.GetInt32("P_Gender");
+
+
+                        labelLoginName.Text = P_Login;
+                        labelLoginName.Font = new System.Drawing.Font("Arial", 14);
+                        labelLoginName.Location = new System.Drawing.Point(0, 0);
+                        labelLoginName.Size = new System.Drawing.Size(200, 20);
+
+                        lableDataReg.Text = "Registration date: " + P_Data_of_Registration;
+                        lableDataReg.Location = new System.Drawing.Point(3, 20);
+                        lableDataReg.Size = new System.Drawing.Size(panelButt.Size.Width - 4, 30);
+
+                        labelName.Text = "Name:  " + P_Name;
+                        labelName.Location = new System.Drawing.Point(0, 8);
+                        labelName.Size = new System.Drawing.Size(200, 20);
+                        labelName.Font = new System.Drawing.Font("Arial", 10);
+
+                        labelSurname.Text = "Surname:  " + P_Surname;
+                        labelSurname.Location = new System.Drawing.Point(labelName.Location.X, labelName.Location.Y + 20);
+                        labelSurname.Size = labelName.Size;
+                        labelSurname.Font = labelName.Font;
+
+                        labelPatronymic.Text = "Patronymic:  " + P_Patronymic;
+                        labelPatronymic.Location = new System.Drawing.Point(labelSurname.Location.X, labelSurname.Location.Y + 20);
+                        labelPatronymic.Size = labelName.Size;
+                        labelPatronymic.Font = labelName.Font;
+                    }
+                }
+            }
+
+            string cityQuery = "SELECT City_Name FROM City WHERE City_id = @CityId";
+            string countryQuery = "SELECT C_Country_Name FROM Country WHERE C_id = @CountryId";
+            string genderQuery = "SELECT Gen_Name FROM Gender WHERE Gen_id = @GenderName";
+
+            string cityName;
+            string CountryName;
+            string GenderName;
+            try
+            {
+                using (MySqlCommand cityCommand = new MySqlCommand(cityQuery, connection))
+                {
+                    cityCommand.Parameters.AddWithValue("@CityId", P_City.ToString());
+                    cityName = (string)cityCommand.ExecuteScalar();
+                    cityCommand.Dispose();
+                }
+            }
+            catch
+            {
+                cityName = "";
+            }
+
+            try
+            {
+                using (MySqlCommand countryCommand = new MySqlCommand(countryQuery, connection))
+                {
+                    countryCommand.Parameters.AddWithValue("@CountryId", P_Country.ToString());
+                    CountryName = (string)countryCommand.ExecuteScalar();
+                    countryCommand.Dispose();
+                }
+            }
+            catch
+            {
+                CountryName = "";
+            }
+
+            try
+            {
+                using (MySqlCommand genderCommand = new MySqlCommand(genderQuery, connection))
+                {
+                    genderCommand.Parameters.AddWithValue("@GenderName", P_Gender.ToString());
+                    GenderName = (string)genderCommand.ExecuteScalar();
+                    genderCommand.Dispose();
+                }
+            }
+            catch
+            {
+                GenderName = "";
+            }
+
+            labelCountry.Text = "Country:  " + CountryName;
+            labelCountry.Location = new System.Drawing.Point(labelPatronymic.Location.X, labelPatronymic.Location.Y + 20);
+            labelCountry.Size = labelName.Size;
+            labelCountry.Font = labelName.Font;
+
+            labelCity.Text = "City:  " + cityName;
+            labelCity.Location = new System.Drawing.Point(labelCountry.Location.X, labelCountry.Location.Y + 20);
+            labelCity.Size = labelName.Size;
+            labelCity.Font = labelName.Font;
+
+            labelGender.Text = "Gender:  " + GenderName;
+            labelGender.Location = new System.Drawing.Point(labelCity.Location.X, labelCity.Location.Y + 20);
+            labelGender.Size = labelName.Size;
+            labelGender.Font = labelName.Font;
+
+            labelAge.Text = "Age:  " + P_Age;
+            labelAge.Location = new System.Drawing.Point(labelGender.Location.X, labelGender.Location.Y + 20);
+            labelAge.Size = labelName.Size;
+            labelAge.Font = labelName.Font;
+
+            Panel panelProfileInf = new Panel();
+            panelProfileInf.BorderStyle = BorderStyle.Fixed3D;
+            panelProfileInf.Location = new System.Drawing.Point(210, 70);
+            panelProfileInf.Size = new System.Drawing.Size(200, 170);
+
+
 
             lableHeaderInf.Text = "Profile Information:";
             lableHeaderInf.Location = new System.Drawing.Point(205, 40);
             lableHeaderInf.Size = new System.Drawing.Size(300, 30);
             lableHeaderInf.Font = new System.Drawing.Font("Arial", 18);
 
-            //
-            labelName.Text = "Name:  " + "Ni!";
-            labelName.Location = new System.Drawing.Point(0, 8);
-            labelName.Size = new System.Drawing.Size(200, 20);
-            labelName.Font = new System.Drawing.Font("Arial", 10);
 
-            labelSurname.Text = "Surname:  " + "Ko!";
-            labelSurname.Location = new System.Drawing.Point(labelName.Location.X, labelName.Location.Y + 20);
-            labelSurname.Size = labelName.Size;
-            labelSurname.Font = labelName.Font;
-
-            labelPatronymic.Text = "Patronymic:  " + "Al!";
-            labelPatronymic.Location = new System.Drawing.Point(labelSurname.Location.X, labelSurname.Location.Y + 20);
-            labelPatronymic.Size = labelName.Size;
-            labelPatronymic.Font = labelName.Font;
-
-            labelCountry.Text = "Country:  " + "Be!";
-            labelCountry.Location = new System.Drawing.Point(labelPatronymic.Location.X, labelPatronymic.Location.Y + 20);
-            labelCountry.Size = labelName.Size;
-            labelCountry.Font = labelName.Font;
-
-            labelCity.Text = "City:  " + "Mi!";
-            labelCity.Location = new System.Drawing.Point(labelCountry.Location.X, labelCountry.Location.Y + 20);
-            labelCity.Size = labelName.Size;
-            labelCity.Font = labelName.Font;
-
-            labelGender.Text = "Gender:  " + "Ma!";
-            labelGender.Location = new System.Drawing.Point(labelCity.Location.X, labelCity.Location.Y + 20);
-            labelGender.Size = labelName.Size;
-            labelGender.Font = labelName.Font;
-
-            labelAge.Text = "Age:  " + "20!";
-            labelAge.Location = new System.Drawing.Point(labelGender.Location.X, labelGender.Location.Y + 20);
-            labelAge.Size = labelName.Size;
-            labelAge.Font = labelName.Font;
 
             form.Controls.Add(lableHeaderInf);
             panelProfileInf.Controls.Add(labelName);
@@ -151,27 +235,17 @@ namespace WebForum.Forms
             buttonProfileSettings.Click += buttonEditProfile_Click;
             
             buttonSubscriptions.Text = "Subscription";
-            buttonSubscriptions.Location = new System.Drawing.Point(100, 45);
+            buttonSubscriptions.Location = new System.Drawing.Point(buttonProfileSettings.Location.X + 95, buttonProfileSettings.Location.Y);
             buttonSubscriptions.Size = buttonProfileSettings.Size;
             buttonSubscriptions.Click += buttonSubscriptionsList_Click;
             //
-            buttonTopicSettings.Text = "Topic Tag Bun";
-            buttonTopicSettings.Location = new System.Drawing.Point(buttonProfileSettings.Location.X, buttonProfileSettings.Location.Y + 30);
-            buttonTopicSettings.Size = buttonProfileSettings.Size;
-            buttonTopicSettings.Click += buttonTopicTagsBunList_Click;
-            
-            buttonForumSettings.Text = "Forum Tag Ban";
-            buttonForumSettings.Location = new System.Drawing.Point(buttonSubscriptions.Location.X, buttonProfileSettings.Location.Y + 30);
-            buttonForumSettings.Size = buttonProfileSettings.Size;
-            buttonForumSettings.Click += buttonForumTagsBunList_Click;
-            //
             buttonBookmarkSettings.Text = "Bookmarks";
-            buttonBookmarkSettings.Location = new System.Drawing.Point(buttonTopicSettings.Location.X, buttonTopicSettings.Location.Y + 30);
+            buttonBookmarkSettings.Location = new System.Drawing.Point(buttonProfileSettings.Location.X, buttonProfileSettings.Location.Y + 30);
             buttonBookmarkSettings.Size = buttonProfileSettings.Size;
             buttonBookmarkSettings.Click += buttonBookmarksList_Click;
 
             buttonCommentsSettings.Text = "Your Comments";
-            buttonCommentsSettings.Location = new System.Drawing.Point(buttonForumSettings.Location.X, buttonForumSettings.Location.Y + 30);
+            buttonCommentsSettings.Location = new System.Drawing.Point(buttonSubscriptions.Location.X, buttonSubscriptions.Location.Y + 30);
             buttonCommentsSettings.Size = buttonProfileSettings.Size;
             buttonCommentsSettings.Click += buttonCommentsList_Click;
             
@@ -200,24 +274,10 @@ namespace WebForum.Forms
             panelProfile.Controls.Add(labelLoginName);
             panelProfile.Controls.Add(lableDataReg);
 
-            labelLoginName.Text = "Your NickName!!!";//--------------------------------!!!
-            labelLoginName.Font = new System.Drawing.Font("Arial", 14);
-            labelLoginName.Location = new System.Drawing.Point(0, 0);
-            labelLoginName.Size = new System.Drawing.Size(200, 20);
-
-            lableDataReg.Text = "Registration date: " + "10.10.1010";
-            lableDataReg.Location = new System.Drawing.Point(3, 20);
-            lableDataReg.Size = new System.Drawing.Size(panelButt.Size.Width - 4, 30);
-
-
             //
             form.Controls.Add(panelButt);
             form.Controls.Add(panelHeader);
             form.Controls.Add(panelProfileInf);
-
-            
-
-            return form;
         }
 
         private static void buttonExit_Click(object sender, EventArgs e)
@@ -267,20 +327,6 @@ namespace WebForum.Forms
             BookMarksList bookmarks = new BookMarksList();
             form.Controls.Clear();
             bookmarks.BookmarksListIni(form, connection, Id);
-        }
-
-        private static void buttonForumTagsBunList_Click(object sender, EventArgs e)
-        {
-            ForumTagBan forumTagBan = new ForumTagBan();
-            form.Controls.Clear();
-            forumTagBan.ForumTagBansIni(form);
-        }
-
-        private static void buttonTopicTagsBunList_Click(object sender, EventArgs e)
-        {
-            TopicTagBan topicTagBan = new TopicTagBan();
-            form.Controls.Clear();
-            topicTagBan.TopicTagBansIni(form);
         }
 
         private static void buttonSubscriptionsList_Click(object sender, EventArgs e)

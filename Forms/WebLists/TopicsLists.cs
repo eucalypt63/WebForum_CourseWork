@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using Mysqlx.Prepare;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolBar;
 using Button = System.Windows.Forms.Button;
 
 namespace WebForum.Forms.WebLists
@@ -17,10 +19,13 @@ namespace WebForum.Forms.WebLists
         static Panel panel = new Panel();
         static MySqlConnection connection;
         static int Id;
-        public Form TopicsListIni(Form formF, MySqlConnection connectionF, int id)
+        static int forumId;
+        public void TopicsListIni(Form formF, MySqlConnection connectionF, int id, int ForumId)
         {
+            forumId = ForumId;
             connection = connectionF;
             form = formF;
+            Id = id;
             form.Size = new System.Drawing.Size(440, 285);
             //
             Panel panelHeader = new Panel();
@@ -30,6 +35,7 @@ namespace WebForum.Forms.WebLists
 
             Button buttonProfile = new Button();
             Button buttonForum = new Button();
+            Button buttonBack = new Button();
 
             buttonProfile.Text = "Profile";
             buttonProfile.Location = new System.Drawing.Point(5, 0);
@@ -43,6 +49,12 @@ namespace WebForum.Forms.WebLists
             buttonForum.Click += buttonForumList_Click;
             panelHeader.Controls.Add(buttonForum);
 
+            buttonBack.Text = "Back";
+            buttonBack.Location = new System.Drawing.Point(panelHeader.Size.Width - 77, 0);
+            buttonBack.Size = buttonProfile.Size;
+            buttonBack.Click += buttonBack_Click;
+            panelHeader.Controls.Add(buttonBack);
+            //Действие возврата
             //
 
             Button PrevPage = new Button();
@@ -71,7 +83,6 @@ namespace WebForum.Forms.WebLists
             form.Controls.Add(panelHeader);
             form.Controls.Add(NextPage);
             form.Controls.Add(PrevPage);
-            return form;
         }
 
         private static void buttonNextPage_Click(object sender, EventArgs e)
@@ -103,27 +114,51 @@ namespace WebForum.Forms.WebLists
             form.Controls.Clear();
             Profile.ProfileFormIni(form, connection, Id);
         }
+
+        private static void buttonBack_Click(object sender, EventArgs e)
+        {
+            ForumsList ForumList = new ForumsList();
+            form.Controls.Clear();
+            ForumList.ForumsListIni(form, connection, Id);
+        }
+
         private static void drawPanel()
         {
             panel.Controls.Clear();
-            for (int i = 0; i < 7 * page; i++)//содержит по 7 полей, прокручивать кнопками
+
+            string query = $"SELECT Top_Name FROM Topic where Top_Forum = {forumId};";
+            MySqlCommand command = new MySqlCommand(query, connection);
+            MySqlDataReader reader = command.ExecuteReader();
+            command.Dispose();
+
+            int i = 0;
+            while (reader.Read())
             {
+                string name = reader.GetString("Top_Name");
+
                 Panel innerPanel = new Panel();
                 innerPanel.BorderStyle = BorderStyle.Fixed3D;
                 innerPanel.Location = new System.Drawing.Point(0, 26 * i);
                 innerPanel.Size = new System.Drawing.Size(panel.Size.Width, 26);
                 panel.Controls.Add(innerPanel);
 
+                Label label = new Label();
+                label.Text = $"Topic: {name}";
+                label.Size = new System.Drawing.Size(120, label.Size.Height);
+                innerPanel.Controls.Add(label);
+
                 Button button = new Button();
                 button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
-                button.Text = "Go to Topic";
+                button.Text = "Watch";
+                button.Name = $"{name}";
                 innerPanel.Controls.Add(button);
-                //добавить действие
+                //button.Click += buttonTopic_Click;
 
-                Label label = new Label();
-                label.Text = "Topic Name " + (i + 1 + (7 * (page - 1)));
-                innerPanel.Controls.Add(label);
+                i++;
             }
+          
+            reader.Close();
+     
         }
     }
 }

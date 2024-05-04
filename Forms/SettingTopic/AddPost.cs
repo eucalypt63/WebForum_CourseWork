@@ -10,11 +10,9 @@ namespace WebForum.Forms.SettingTopic
     internal class AddPost
     {
         static Form form = new Form();
-        public Form AddPostIni(Form formF)
+        public void AddPostIni(Form formF)
         {
             form = formF;
-
-            return form;
         }
     }
 }

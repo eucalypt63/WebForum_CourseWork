@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using Mysqlx.Crud;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,16 +13,25 @@ namespace WebForum.Forms
     internal class EditProfile
     {
         static MySqlConnection connection;
-        static TextBox textBoxPassword;
+        static ComboBox comboBoxCountry = new ComboBox();
+        static ComboBox comboBoxCity = new ComboBox();
+        static TextBox TextBoxName = new TextBox();
+        static TextBox TextBoxSurname = new TextBox();
+        static TextBox TextBoxPatronymic = new TextBox();
+        static ComboBox comboBoxGender = new ComboBox();//для бд
+        static TextBox TextBoxAge = new TextBox();// для бд
+
         static Form form = new Form();
         static int Id;
-        public Form EditProfileFormIni(Form formF, MySqlConnection connectionF, int id)
+        public void EditProfileFormIni(Form formF, MySqlConnection connectionF, int id)
         {
             Id = id;
             connection = connectionF;
             form = formF;
             form.Size = new System.Drawing.Size(280, 240);
 
+            comboBoxCity.Items.Clear();
+            comboBoxCountry.Items.Clear();
             Label labelName = new Label();
             Label labelSurname = new Label();
             Label labelPatronymic = new Label();
@@ -31,14 +41,7 @@ namespace WebForum.Forms
             Label labelGender = new Label();//для бд
             Label labelAge = new Label();// для бд
 
-            TextBox TextBoxName = new TextBox();
-            TextBox TextBoxSurname = new TextBox();
-            TextBox TextBoxPatronymic = new TextBox();
 
-            TextBox TextBoxCountry = new TextBox();
-            TextBox TextBoxCity = new TextBox();//для бд
-            TextBox TextBoxGender = new TextBox();//для бд
-            TextBox TextBoxAge = new TextBox();// для бд
 
             Button buttonSave = new Button();
             Button buttonExit = new Button();
@@ -47,7 +50,7 @@ namespace WebForum.Forms
 
             labelName.Text = "Name:";
             labelName.Location = new System.Drawing.Point(5, 8);
-            labelName.Size = new System.Drawing.Size(100, 16);
+            labelName.Size = new System.Drawing.Size(100, 15);
             labelName.Font = new System.Drawing.Font("Arial", 10);
 
             TextBoxName.Location = new System.Drawing.Point(labelName.Location.X, labelName.Location.Y + 15);
@@ -84,35 +87,61 @@ namespace WebForum.Forms
             labelCountry.Size = labelName.Size;
             labelCountry.Font = labelName.Font;
 
-            TextBoxCountry.Location = new System.Drawing.Point(labelCountry.Location.X, labelCountry.Location.Y + 15);
-            TextBoxCountry.Size = new System.Drawing.Size(110, labelCountry.Size.Height);
+            comboBoxCountry.Location = new System.Drawing.Point(labelCountry.Location.X, labelCountry.Location.Y + 15);
+            comboBoxCountry.Size = new System.Drawing.Size(110, labelCountry.Size.Height);
+            comboBoxCountry.SelectedIndexChanged += new EventHandler(comboBoxCountry_SelectedIndexChanged);
+
+            string query = "SELECT C_Country_Name FROM Country";
+            MySqlCommand command = new MySqlCommand(query, connection);
+            MySqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                string countryName = reader.GetString("C_Country_Name");
+                comboBoxCountry.Items.Add(countryName);
+            }
+            comboBoxCountry.DropDownStyle = ComboBoxStyle.DropDownList;
+            reader.Close();
+            command.Dispose();
 
             labelCity.Text = "City:";
             labelCity.Location = new System.Drawing.Point(labelCountry.Location.X, labelCountry.Location.Y + 40);
             labelCity.Size = labelName.Size;
             labelCity.Font = labelName.Font;
 
-            TextBoxCity.Location = new System.Drawing.Point(labelCity.Location.X, labelCity.Location.Y + 15);
-            TextBoxCity.Size = new System.Drawing.Size(110, labelCity.Size.Height);
+            comboBoxCity.Location = new System.Drawing.Point(labelCity.Location.X, labelCity.Location.Y + 15);
+            comboBoxCity.Size = new System.Drawing.Size(110, labelCity.Size.Height);
+            comboBoxCity.DropDownStyle = ComboBoxStyle.DropDownList;
 
             labelGender.Text = "Gender:";
             labelGender.Location = new System.Drawing.Point(labelCity.Location.X, labelCity.Location.Y + 40);
             labelGender.Size = labelName.Size;
             labelGender.Font = labelName.Font;
 
-            TextBoxGender.Location = new System.Drawing.Point(labelGender.Location.X, labelGender.Location.Y + 15);
-            TextBoxGender.Size = new System.Drawing.Size(110, labelGender.Size.Height);
+            comboBoxGender.Location = new System.Drawing.Point(labelGender.Location.X, labelGender.Location.Y + 15);
+            comboBoxGender.Size = new System.Drawing.Size(110, labelGender.Size.Height);
+
+            query = "SELECT Gen_Name FROM Gender";
+            command = new MySqlCommand(query, connection);
+            reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                string countryName = reader.GetString("Gen_Name");
+                comboBoxGender.Items.Add(countryName);
+            }
+            reader.Close();
+            command.Dispose();
+            comboBoxGender.DropDownStyle = ComboBoxStyle.DropDownList;
 
             //
 
             buttonSave.Text = "Save";
             buttonSave.Location = new System.Drawing.Point(TextBoxAge.Location.X, TextBoxAge.Location.Y + 25);
-            buttonSave.Size = TextBoxGender.Size;
+            buttonSave.Size = comboBoxGender.Size;
             buttonSave.Click += buttonSave_Click;
 
             buttonExit.Text = "Сancel";
-            buttonExit.Location = new System.Drawing.Point(TextBoxGender.Location.X, TextBoxAge.Location.Y + 25);
-            buttonExit.Size = TextBoxGender.Size;
+            buttonExit.Location = new System.Drawing.Point(comboBoxGender.Location.X, TextBoxAge.Location.Y + 25);
+            buttonExit.Size = comboBoxGender.Size;
             buttonExit.Click += buttonCancel_Click;
 
             form.Controls.Add(labelName);
@@ -127,23 +156,89 @@ namespace WebForum.Forms
             form.Controls.Add(TextBoxSurname);
             form.Controls.Add(TextBoxPatronymic);
 
-            form.Controls.Add(TextBoxCountry);
-            form.Controls.Add(TextBoxCity);
-            form.Controls.Add(TextBoxGender);
+            form.Controls.Add(comboBoxCountry);
+            form.Controls.Add(comboBoxCity);
+            form.Controls.Add(comboBoxGender);
             form.Controls.Add(TextBoxAge);
 
             form.Controls.Add(buttonSave);
             form.Controls.Add(buttonExit);
+        }
 
-            return formF;
+        private void comboBoxCountry_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedCountry = comboBoxCountry.SelectedItem.ToString();
+            string countryIdQuery = $"SELECT C_id FROM Country WHERE C_Country_Name = '{selectedCountry}'";
+            MySqlCommand countryIdCommand = new MySqlCommand(countryIdQuery, connection);
+            int countryId = Convert.ToInt32(countryIdCommand.ExecuteScalar());
+            string citiesQuery = $"SELECT City_Name FROM City WHERE City_Country_id = {countryId}";
+            MySqlCommand citiesCommand = new MySqlCommand(citiesQuery, connection);
+            MySqlDataReader reader = citiesCommand.ExecuteReader();
+            comboBoxCity.Items.Clear();
+            comboBoxCity.Text = "";
+            while (reader.Read())
+            {
+                string cityName = reader.GetString("City_Name");
+                comboBoxCity.Items.Add(cityName);
+            }
+            reader.Close();
+            countryIdCommand.Dispose();
+            citiesCommand.Dispose();
         }
 
         private static void buttonSave_Click(object sender, EventArgs e)
         {
-            //Сохранить изменения в бд
-            Profile profile = new Profile();
-            form.Controls.Clear();
-            profile.ProfileFormIni(form, connection, Id);
+            if (TextBoxName.Text != "" && comboBoxCountry.SelectedItem != null && comboBoxCity.SelectedItem != null && TextBoxSurname.Text != "" && TextBoxPatronymic.Text != "" && comboBoxGender.SelectedItem != null && TextBoxAge.Text != "")
+            {
+                string query = $"UPDATE Profile SET P_Name = @Name, P_Country = @Country, P_City = @City, P_Surname = @Surname, P_Patronymic = @Patronymic, P_Gender = @Gender, P_Age = @Age WHERE P_id = {Id}";
+                MySqlCommand command = new MySqlCommand(query, connection);
+
+                string cityQuery = "SELECT City_id FROM City WHERE City_Name = @CityName";
+                string countryQuery = "SELECT C_id FROM Country WHERE C_Country_Name = @CountryName";
+                string genderQuery = "SELECT Gen_id FROM Gender WHERE Gen_Name = @GenderName";
+
+                int cityId;
+                int countryId;
+                int GenId;
+                using (MySqlCommand cityCommand = new MySqlCommand(cityQuery, connection))
+                {
+                    cityCommand.Parameters.AddWithValue("@CityName", comboBoxCity.SelectedItem.ToString());
+                    cityId = (int)cityCommand.ExecuteScalar();
+                    cityCommand.Dispose();
+                }
+
+                // Получение id страны
+                using (MySqlCommand countryCommand = new MySqlCommand(countryQuery, connection))
+                {
+                    countryCommand.Parameters.AddWithValue("@CountryName", comboBoxCountry.SelectedItem.ToString());
+                    countryId = (int)countryCommand.ExecuteScalar();
+                    countryCommand.Dispose();
+                }
+
+                using (MySqlCommand genderCommand = new MySqlCommand(genderQuery, connection))
+                {
+                    genderCommand.Parameters.AddWithValue("@GenderName", comboBoxGender.SelectedItem.ToString());
+                    GenId = (int)genderCommand.ExecuteScalar();
+                    genderCommand.Dispose();
+                }
+
+
+
+                command.Parameters.AddWithValue("@Name", TextBoxName.Text);
+                command.Parameters.AddWithValue("@Country", countryId.ToString());
+                command.Parameters.AddWithValue("@City", cityId.ToString());
+                command.Parameters.AddWithValue("@Surname", TextBoxSurname.Text);
+                command.Parameters.AddWithValue("@Patronymic", TextBoxPatronymic.Text);
+                command.Parameters.AddWithValue("@Gender", GenId.ToString());
+                command.Parameters.AddWithValue("@Age", TextBoxAge.Text);
+                command.ExecuteNonQuery();
+                command.Dispose();
+
+                //Сохранить изменения в бд
+                Profile profile = new Profile();
+                form.Controls.Clear();
+                profile.ProfileFormIni(form, connection, Id);
+            }
         }
         private static void buttonCancel_Click(object sender, EventArgs e)
         {

@@ -17,7 +17,7 @@ namespace WebForum.Forms.WebLists
         static Panel panel = new Panel();
         static MySqlConnection connection;
         static int Id;
-        public Form ForumsListIni(Form formF, MySqlConnection connectionF, int id)
+        public void ForumsListIni(Form formF, MySqlConnection connectionF, int id)
         {
             Id = id;
             connection = connectionF;
@@ -72,18 +72,24 @@ namespace WebForum.Forms.WebLists
             form.Controls.Add(panelHeader);
             form.Controls.Add(NextPage);
             form.Controls.Add(PrevPage);
-            return form;
         }
 
         private static void buttonNextPage_Click(object sender, EventArgs e)
         {
-            //Добавить ограничения бд
-            page++;
-            drawPanel();
+            string query = "Select count(*) from Forum";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            object result = command.ExecuteScalar();
+            int Num = Convert.ToInt32(result) + 5;
+            double i = Num / 7;
+            if (i + 1 > page)
+            {
+                page++;
+                drawPanel();
+            }
         }
         private static void buttonPrevPage_Click(object sender, EventArgs e)
         {
-            //Добавить ограничения бд
             if (page - 1 > 0)
             {
                 page--;
@@ -104,27 +110,64 @@ namespace WebForum.Forms.WebLists
             form.Controls.Clear();
             Profile.ProfileFormIni(form, connection, Id);
         }
+
         private static void drawPanel ()
         {
             panel.Controls.Clear();
-            for (int i = 0; i < 7 * page; i++)//содержит по 7 полей, прокручивать кнопками
+            
+            int i = 0;
+            string queryCount = $"Select count(*) from Forum";
+            MySqlCommand commandCount = new MySqlCommand(queryCount, connection);
+            object result = commandCount.ExecuteScalar();
+            commandCount.Dispose();
+
+            int count = Convert.ToInt32(result);
+            while (i < count)
             {
+                string query = $"SELECT For_Name FROM Forum where For_id = {i};";
+                MySqlCommand command = new MySqlCommand(query, connection);
+                MySqlDataReader reader = command.ExecuteReader();
+                string name = "";
+                if (reader.Read())
+                    name = reader.GetString("For_Name");
+
                 Panel innerPanel = new Panel();
                 innerPanel.BorderStyle = BorderStyle.Fixed3D;
                 innerPanel.Location = new System.Drawing.Point(0, 26 * i);
                 innerPanel.Size = new System.Drawing.Size(panel.Size.Width, 26);
                 panel.Controls.Add(innerPanel);
 
+                Label label = new Label();
+                label.Text = $"Forum: {name}";
+                label.Size = new System.Drawing.Size(120, label.Size.Height);
+                innerPanel.Controls.Add(label);
+
                 Button button = new Button();
                 button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
-                button.Text = "Go to Forum";
+                button.Text = $"Watch";
+                button.Name = $"{name}";
+                button.Click += buttonForum_Click;
                 innerPanel.Controls.Add(button);
-                //добавить действие
 
-                Label label = new Label();
-                label.Text = "Forum Name " + (i + 1 + (7 * (page - 1)));
-                innerPanel.Controls.Add(label);
+                command.Dispose();
+                reader.Close();
+                i++;
             }
+
+        }
+
+        private static void buttonForum_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            string query = $"Select For_id from Forum where For_Name = \'{button.Name}\';";
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.ExecuteNonQuery();
+            object result = command.ExecuteScalar();
+            int IdForum = Convert.ToInt32(result);
+
+            TopicsLists Topics = new TopicsLists();
+            form.Controls.Clear();
+            Topics.TopicsListIni(form, connection, Id, IdForum);
         }
     }
 }

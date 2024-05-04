@@ -18,7 +18,7 @@ namespace WebForum.Forms.WebLists
         static MySqlConnection connection;
         static int Id;
 
-        public Form PostsListIni(Form formF, MySqlConnection connectionF, int id)
+        public void PostsListIni(Form formF, MySqlConnection connectionF, int id)
         {
             Id = id;
             connection = connectionF;
@@ -73,7 +73,6 @@ namespace WebForum.Forms.WebLists
             form.Controls.Add(panelHeader);
             form.Controls.Add(NextPage);
             form.Controls.Add(PrevPage);
-            return form;
         }
 
         private static void buttonNextPage_Click(object sender, EventArgs e)

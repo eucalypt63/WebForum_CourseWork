@@ -88,9 +88,17 @@ namespace WebForum.Forms.ProfilLists
 
         private static void buttonNextPage_Click(object sender, EventArgs e)
         {
-            //Добавить ограничения бд
-            page++;
-            drawPanel();
+            string query = $"Select count(*) from Subscriptions where Sub_Profile = {UserId}";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            object result = command.ExecuteScalar();
+            int Num = Convert.ToInt32(result);
+            double i = Num / 7;
+            if (i + 1 > page)
+            {
+                page++;
+                drawPanel();
+            }
         }
         private static void buttonPrevPage_Click(object sender, EventArgs e)
         {

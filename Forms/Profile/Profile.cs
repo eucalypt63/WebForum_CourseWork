@@ -15,7 +15,6 @@ namespace WebForum.Forms
 {
     internal class Profile
     {
-        static TextBox textBoxPassword;
         static Form form = new Form();
         static MySqlConnection connection;
         static int Id;
@@ -326,14 +325,14 @@ namespace WebForum.Forms
         {
             CommentsList comments = new CommentsList();
             form.Controls.Clear();
-            comments.ComentsListIni(form, connection, Id);
+            comments.ComentsListIni(form, connection, Id, Id);
         }
 
         private static void buttonBookmarksList_Click(object sender, EventArgs e)
         {
             BookMarksList bookmarks = new BookMarksList();
             form.Controls.Clear();
-            bookmarks.BookmarksListIni(form, connection, Id);
+            bookmarks.BookmarksListIni(form, connection, Id, Id);
         }
 
         private static void buttonSubscriptionsList_Click(object sender, EventArgs e)

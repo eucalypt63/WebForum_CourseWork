@@ -112,38 +112,49 @@ namespace WebForum.Forms
         {
             if (textBoxLogin.Text != "" && textBoxPassword.Text != "")
             {
-                string query = "INSERT INTO Profile (P_Login, P_Password, P_Data_of_Registration, P_id) SELECT @login, @password, CURDATE(), (SELECT MAX(P_id) + 1 FROM (SELECT * FROM Profile) AS temp);";
-                MySqlCommand command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("@login", textBoxLogin.Text);
-                command.Parameters.AddWithValue("@password", textBoxPassword.Text);
-                command.ExecuteNonQuery();
-
-                string queryId = "SELECT MAX(P_id) FROM Profile";
-                command = new MySqlCommand(queryId, connection);
-                object result = command.ExecuteScalar();
-                int Id = Convert.ToInt32(result);
-
-                string queryFil = $"UPDATE Profile SET P_Name = @Name, P_Country = @Country, P_City = @City, P_Surname = @Surname, P_Patronymic = @Patronymic, P_Gender = @Gender, P_Age = @Age WHERE P_id = {Id}";
-
-                using (MySqlCommand commandFil = new MySqlCommand(queryFil, connection))
+                string queryReg = $"SELECT COUNT(*) FROM Profile WHERE P_Login = '{textBoxLogin.Text}'";
+                int count = -1;
+                using (MySqlCommand commandReg = new MySqlCommand(queryReg, connection))
                 {
-                    commandFil.Parameters.AddWithValue("@Name", "");
-                    commandFil.Parameters.AddWithValue("@Country", -1);
-                    commandFil.Parameters.AddWithValue("@City", -1);
-                    commandFil.Parameters.AddWithValue("@Surname", "");
-                    commandFil.Parameters.AddWithValue("@Patronymic", "");
-                    commandFil.Parameters.AddWithValue("@Gender", -1);
-                    commandFil.Parameters.AddWithValue("@Age", "");
-
-                    commandFil.ExecuteNonQuery();
-                    commandFil.Dispose();
+                    count = Convert.ToInt32(commandReg.ExecuteScalar());
                 }
-                command.Dispose();
-                //
 
-                ForumsList ForumList = new ForumsList();
-                form.Controls.Clear();
-                ForumList.ForumsListIni(form, connection, Id);
+                if (count == 0)
+                {
+                    string query = "INSERT INTO Profile (P_Login, P_Password, P_Data_of_Registration, P_id) SELECT @login, @password, CURDATE(), (SELECT MAX(P_id) + 1 FROM (SELECT * FROM Profile) AS temp);";
+                    MySqlCommand command = new MySqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@login", textBoxLogin.Text);
+                    command.Parameters.AddWithValue("@password", textBoxPassword.Text);
+                    command.ExecuteNonQuery();
+
+                    string queryId = "SELECT MAX(P_id) FROM Profile";
+                    command = new MySqlCommand(queryId, connection);
+                    object result = command.ExecuteScalar();
+                    int Id = Convert.ToInt32(result);
+
+                    string queryFil = $"UPDATE Profile SET P_Name = @Name, P_Country = @Country, P_City = @City, P_Surname = @Surname, P_Patronymic = @Patronymic, P_Gender = @Gender, P_Age = @Age WHERE P_id = {Id}";
+
+                    using (MySqlCommand commandFil = new MySqlCommand(queryFil, connection))
+                    {
+                        commandFil.Parameters.AddWithValue("@Name", "");
+                        commandFil.Parameters.AddWithValue("@Country", -1);
+                        commandFil.Parameters.AddWithValue("@City", -1);
+                        commandFil.Parameters.AddWithValue("@Surname", "");
+                        commandFil.Parameters.AddWithValue("@Patronymic", "");
+                        commandFil.Parameters.AddWithValue("@Gender", -1);
+                        commandFil.Parameters.AddWithValue("@Age", "");
+
+                        commandFil.ExecuteNonQuery();
+                        commandFil.Dispose();
+                    }
+                    command.Dispose();
+                    //
+
+                    ForumsList ForumList = new ForumsList();
+                    form.Controls.Clear();
+                    ForumList.ForumsListIni(form, connection, Id);
+                }
+
             }
         }
     }

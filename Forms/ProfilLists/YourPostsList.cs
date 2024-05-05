@@ -122,14 +122,14 @@ namespace WebForum.Forms.ProfilLists
             panel.Controls.Clear();
 
             int i = 0;
-            string queryCount = $"Select count(*) from Post  where Post_Profile = {UserId}";
+            string queryCount = $"Select count(*) from Post where Post_Profile = {UserId}";
             MySqlCommand commandCount = new MySqlCommand(queryCount, connection);
             object result = commandCount.ExecuteScalar();
             commandCount.Dispose();
 
             int count = Convert.ToInt32(result);
             int countUs = 0;
-            while (countUs < 7 && countUs < count - (7 * (page - 1)) && i < count - (7 * (page - 1)))
+            while (countUs < 7 && countUs < count - (7 * (page - 1)))
             {
                 string query = $"SELECT Post_Title FROM Post where Post_id = {i + (7 * (page - 1))} AND Post_Profile = {UserId};";
                 MySqlCommand command = new MySqlCommand(query, connection);
@@ -155,7 +155,7 @@ namespace WebForum.Forms.ProfilLists
                     button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
                     button.Text = $"Watch";
                     button.Name = $"{name}";
-                    //button.Click += buttonUser_Click;
+                    button.Click += buttonPost_Click;
                     innerPanel.Controls.Add(button);
                     countUs++;
                 }
@@ -169,6 +169,20 @@ namespace WebForum.Forms.ProfilLists
             UsersList UserList = new UsersList();
             form.Controls.Clear();
             UserList.UsersListIni(form, connection, Id);
+        }
+
+        private static void buttonPost_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            string query = $"Select Post_id from pOST where Post_Title = \'{button.Name}\';";
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.ExecuteNonQuery();
+            object result = command.ExecuteScalar();
+            int IdPosT = Convert.ToInt32(result);
+
+            PostInf Topics = new PostInf();
+            form.Controls.Clear();
+            Topics.PostInfIni(form, connection, Id, IdPosT);
         }
     }
 }

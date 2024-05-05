@@ -94,7 +94,7 @@ namespace WebForum.Forms.WebLists
 
         private static void buttonNextPage_Click(object sender, EventArgs e)
         {
-            string query = "Select count(*) from Topic";
+            string query = $"Select count(*) from Topic where Top_Forum = {forumId}";
 
             MySqlCommand command = new MySqlCommand(query, connection);
             object result = command.ExecuteScalar();
@@ -146,7 +146,7 @@ namespace WebForum.Forms.WebLists
             MySqlDataReader reader = command.ExecuteReader();
             command.Dispose();
 
-            int i = 0;//Добавить ограничение на 7 топиков, тоже самое с поставми и форумами
+            int i = 0;
             while (reader.Read())
             {
                 string name = reader.GetString("Top_Name");
@@ -167,13 +167,26 @@ namespace WebForum.Forms.WebLists
                 button.Text = "Watch";
                 button.Name = $"{name}";
                 innerPanel.Controls.Add(button);
-                //button.Click += buttonTopic_Click;
+                button.Click += buttonTopic_Click;
 
                 i++;
             }
           
             reader.Close();
      
+        }
+        private static void buttonTopic_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            string query = $"Select Top_id from Topic where Top_Name = \'{button.Name}\';";
+            MySqlCommand command = new MySqlCommand(query, connection);
+            command.ExecuteNonQuery();
+            object result = command.ExecuteScalar();
+            int IdTopic = Convert.ToInt32(result);
+
+            PostsList PostList = new PostsList();
+            form.Controls.Clear();
+            PostList.PostsListIni(form, connection, Id, IdTopic);
         }
 
         private static void buttonUserList_Click(object sender, EventArgs e)

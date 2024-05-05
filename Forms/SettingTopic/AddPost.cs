@@ -127,7 +127,7 @@ namespace WebForum.Forms.SettingTopic
                     cityCommand.Dispose();
                 }
 
-                string query = "INSERT INTO Post (Post_id, Post_Title, Post_Text, Post_Topic, Post_Profile) VALUES (@postId, @title, @postText, @topic, @profile)";
+                string query = "INSERT INTO Post (Post_id, Post_Title, Post_Text, Post_Topic, Post_Date, Post_Profile) VALUES (@postId, @title, @postText, @topic, CURDATE(), @profile)";
                 
                 string getMaxIdQuery = "SELECT MAX(Post_id) FROM Post";
                 int postId;

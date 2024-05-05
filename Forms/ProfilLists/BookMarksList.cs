@@ -8,6 +8,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using WebForum.Forms.WebLists;
 using Button = System.Windows.Forms.Button;
 using MySql.Data.MySqlClient;
+using System.Diagnostics.Metrics;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolBar;
 
 namespace WebForum.Forms.ProfilLists
 {
@@ -18,8 +20,11 @@ namespace WebForum.Forms.ProfilLists
         static Panel panel = new Panel();
         static MySqlConnection connection;
         static int Id;
-        public void BookmarksListIni(Form formF, MySqlConnection connectionF, int id)
+        static int UserId;
+
+        public void BookmarksListIni(Form formF, MySqlConnection connectionF, int id, int userId)
         {
+            UserId = userId;
             Id = id;
             connection = connectionF;
             form = formF;
@@ -49,7 +54,7 @@ namespace WebForum.Forms.ProfilLists
             buttonUsersList.Text = "Users List";
             buttonUsersList.Location = new System.Drawing.Point(buttonForum.Location.X + buttonForum.Size.Width + 5, buttonForum.Location.Y);
             buttonUsersList.Size = buttonProfile.Size;
-            //buttonUsersList.Click += buttonForumList_Click;
+            buttonUsersList.Click += buttonUserList_Click;
             panelHeader.Controls.Add(buttonUsersList);
             //
 
@@ -83,9 +88,17 @@ namespace WebForum.Forms.ProfilLists
 
         private static void buttonNextPage_Click(object sender, EventArgs e)
         {
-            //Добавить ограничения бд
-            page++;
-            drawPanel();
+            string query = $"Select count(*) from m2m_Bookmarks where Bo_Profile = {UserId}";
+
+            MySqlCommand command = new MySqlCommand(query, connection);
+            object result = command.ExecuteScalar();
+            int Num = Convert.ToInt32(result);
+            double i = Num / 7;
+            if (i + 1 > page)
+            {
+                page++;
+                drawPanel();
+            }
         }
         private static void buttonPrevPage_Click(object sender, EventArgs e)
         {
@@ -110,32 +123,83 @@ namespace WebForum.Forms.ProfilLists
             form.Controls.Clear();
             Profile.ProfileFormIni(form, connection, Id);
         }
+
         private static void drawPanel()
         {
             panel.Controls.Clear();
-            for (int i = 0; i < 7 * page; i++)//содержит по 7 полей, прокручивать кнопками
+
+            List<int> boTopics = new List<int>();
+            string query = $"SELECT Bo_Topic FROM m2m_Bookmarks WHERE Bo_Profile = {UserId}";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
             {
-                Panel innerPanel = new Panel();
-                innerPanel.BorderStyle = BorderStyle.Fixed3D;
-                innerPanel.Location = new System.Drawing.Point(0, 26 * i);
-                innerPanel.Size = new System.Drawing.Size(panel.Size.Width, 26);
-                panel.Controls.Add(innerPanel);
-
-                Button button = new Button();
-                button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
-                button.Text = "Go to Post";
-                innerPanel.Controls.Add(button);
-
-                Button buttonDel = new Button();
-                buttonDel.Location = new System.Drawing.Point(panel.Size.Width - 160, 0);
-                buttonDel.Text = "Delate Bookmark";
-                innerPanel.Controls.Add(buttonDel);
-                //добавить действие
-
-                Label label = new Label();
-                label.Text = "Post Name " + (i + 1 + (7 * (page - 1)));
-                innerPanel.Controls.Add(label);
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int boTopic = reader.GetInt32(0);
+                        boTopics.Add(boTopic);
+                    }
+                }
             }
+
+            for (int i = 0; i < 7 && i < boTopics.Count(); i++)
+            {
+                string queryTopic = $"SELECT Top_Name FROM Topic where Top_id = {boTopics[i + (7 * (page - 1))]};";
+
+                MySqlCommand command = new MySqlCommand(queryTopic, connection);
+                MySqlDataReader reader = command.ExecuteReader();
+                string name = "";
+                if (reader.Read())
+                    name = reader.GetString("Top_Name");
+
+                if (name != "")
+                {
+                    Panel innerPanel = new Panel();
+                    innerPanel.BorderStyle = BorderStyle.Fixed3D;
+                    innerPanel.Location = new System.Drawing.Point(0, 26 * i);
+                    innerPanel.Size = new System.Drawing.Size(panel.Size.Width, 26);
+                    panel.Controls.Add(innerPanel);
+
+                    Label label = new Label();
+                    label.Text = $"Topic: {name}";
+                    label.Size = new System.Drawing.Size(120, label.Size.Height);
+                    innerPanel.Controls.Add(label);
+
+                    Button button = new Button();
+                    button.Location = new System.Drawing.Point(panel.Size.Width - 80, 0);
+                    button.Text = $"Watch";
+                    button.Name = $"{name}";
+                    button.Click += buttonTopic_Click;
+                    innerPanel.Controls.Add(button);
+                }
+                command.Dispose();
+                reader.Close();
+            }
+
+        }
+
+        private static void buttonTopic_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            string queryTopicId = $"SELECT Top_id FROM Topic WHERE Top_Name = \'{button.Name}\'";
+            int TopicId = -1;
+            using (MySqlCommand TopicCommand = new MySqlCommand(queryTopicId, connection))
+            {
+                object result = TopicCommand.ExecuteScalar();
+                TopicId = Convert.ToInt32(result);
+            }
+
+            PostsList UserList = new PostsList();
+            form.Controls.Clear();
+            UserList.PostsListIni(form, connection, Id, TopicId);
+        }
+
+        private static void buttonUserList_Click(object sender, EventArgs e)
+        {
+            UsersList UserList = new UsersList();
+            form.Controls.Clear();
+            UserList.UsersListIni(form, connection, Id);
         }
     }
 }

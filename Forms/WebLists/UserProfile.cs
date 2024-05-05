@@ -233,7 +233,7 @@ namespace WebForum.Forms.WebLists
             buttonBookmarkSettings.Text = "Bookmarks";
             buttonBookmarkSettings.Location = new System.Drawing.Point(buttonSubscriptions.Location.X + 95, buttonSubscriptions.Location.Y);
             buttonBookmarkSettings.Size = buttonSubscriptions.Size;
-            //buttonBookmarkSettings.Click += buttonBookmarksList_Click;
+            buttonBookmarkSettings.Click += buttonBookmarksList_Click;
 
             //
 
@@ -352,6 +352,14 @@ namespace WebForum.Forms.WebLists
             YourPostsList Posts = new YourPostsList();
             form.Controls.Clear();
             Posts.PostListIni(form, connection, Id, UserId);
+        }
+
+        
+        private static void buttonBookmarksList_Click(object sender, EventArgs e)
+        {
+            BookMarksList bookmarks = new BookMarksList();
+            form.Controls.Clear();
+            bookmarks.BookmarksListIni(form, connection, Id, UserId);
         }
     }
 }

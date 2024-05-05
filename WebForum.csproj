@@ -112,6 +112,7 @@
     <Compile Include="Forms\ProfilLists\CommentsList.cs" />
     <Compile Include="Forms\ProfilLists\YourPostsList.cs" />
     <Compile Include="Forms\ProfilLists\SubscriprionsList.cs" />
+    <Compile Include="Forms\SettingTopic\AddComment.cs" />
     <Compile Include="Forms\SettingTopic\AddPost.cs" />
     <Compile Include="Forms\WebLists\CommentsOfPost.cs" />
     <Compile Include="Forms\WebLists\ForumsList.cs" />

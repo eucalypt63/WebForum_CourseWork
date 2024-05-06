@@ -99,7 +99,7 @@ namespace WebForum.Forms.WebLists
             MySqlCommand command = new MySqlCommand(query, connection);
             object result = command.ExecuteScalar();
             int Num = Convert.ToInt32(result);
-            double i = Num / 7;
+            double i = (Num - 1) / 7;
             if (i + 1 > page)
             {
                 page++;

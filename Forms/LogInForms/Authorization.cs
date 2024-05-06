@@ -130,10 +130,6 @@ namespace WebForum.forms
                 form.Controls.Clear();
                 ForumList.ForumsListIni(form, connection, userId);
             }
-            else
-            {
-                //Неверный логин и/или пароль
-            }
         }
     }
 }

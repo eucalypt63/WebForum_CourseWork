@@ -131,6 +131,7 @@ namespace WebForum.Forms.WebLists
             CommList.Location = new System.Drawing.Point(120, 30);
             CommList.Size = new System.Drawing.Size(90, 20);
             CommList.Text = "Comments";
+            CommList.Click += CommList_Click;
 
             AddComm.Location = new System.Drawing.Point(CommList.Location.X + 90, CommList.Location.Y);
             AddComm.Size = CommList.Size;
@@ -200,6 +201,14 @@ namespace WebForum.Forms.WebLists
             form.Controls.Clear();
             AddComm.AddCommentIni(form, connection, Id, PostId);
         }
-            
+
+        private static void CommList_Click(object sender, EventArgs e)
+        {
+            CommentsOfPost Comments = new CommentsOfPost();
+            form.Controls.Clear();
+            Comments.CommentsOfPostIni(form, connection, Id, PostId);
+        }
+        
+
     }
 }
